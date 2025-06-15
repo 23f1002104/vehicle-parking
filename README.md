@@ -1,6 +1,6 @@
 # vehicle-parking
 
-## ✅ Project TODO: Flask App
+## Project TODO: Flask App
 
 - [ ] Implement authentication for users using `flask-login`
 - [ ] ~Try using `flask-wtf` for form validation and CSRF protection~
