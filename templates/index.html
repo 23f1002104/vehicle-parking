@@ -5,37 +5,43 @@
 {% endblock %}
 
 {% block navbar %}
-        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">V-Park</a>
+            <a class="navbar-brand" href="/">V-Park</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('about') }}">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('features') }}">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('services') }}">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" aria-disabled="true">Stats</a>
+                        <!-- <a class="nav-link active" aria-current="page" href="{{ url_for('stats') }}">Stats</a> -->
+                    </li>
+                </ul>
+                <form class="d-flex" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
                 <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">About Us</a>
+                    <a class="btn btn-outline-primary" href="{{ url_for('login') }}">login</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Features</a>
+                    <a class="btn btn-outline-secondary" href="{{ url_for('register') }}">Register</a>
                 </li>
-                <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Services</a>
-                </li>
-            </ul>
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-                <button class="btn btn-outline-success" type="submit">Search</button>
-            </form>
-            <form class="container-fluid justify-content-end">
-                <button class="btn btn-outline-primay me-2" type="button">Log In</button>
-                <button class="btn btn-sm btn-outline-secondary" type="button">Register</button>
-            </form>
             </div>
         </div>
-        </nav>
+    </nav>
 {% endblock %}
 
 {% block content %}
-    
+    <p>{{ lipsum(n=10, html=True, min=10, max=20) }}</p>
 {% endblock %}

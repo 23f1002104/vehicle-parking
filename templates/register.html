@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+    
+{% endblock %}
+
+{% block content %}
+<form class="g-3" method="post">
+    <br>
+    <div class="col-md-6">
+        <label for="inputname" class="form-label fw-bold text-dark">Username</label>
+        <input type="text" class="form-control" id="inputname" name="username">
+    </div>
+    <br>
+    <div class="col-md-6">
+        <label for="inputEmail" class="form-label fw-bold text-dark">Email</label>
+        <input type="email" class="form-control" id="inputEmail" name="email">
+    </div>
+    <br>
+    <div class="col-md-6">
+        <label for="inputPassword" class="form-label fw-bold text-dark">Password</label>
+        <input type="password" class="form-control" id="inputPassword" name="password">
+    </div>
+    <br>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Register</button>
+    </div>
+</form>
+{% endblock %}

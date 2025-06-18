@@ -2,16 +2,17 @@ import uuid
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
-from app import db
-
+# from app import db
+db = SQLAlchemy()
 
 # User model
 class User(db.Model, UserMixin):
-    id = db.Column(db.String, primary_key=True, default=str(uuid.uuid4()))
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4())) # using direct str(uuid.uuid4()) assigned same id to all and caused trouble
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)  
+    is_admin = db.Column(db.Boolean, default=False)
+    is_flagged = db.Column(db.Boolean, default=False)
 
     reservations = db.relationship('Reservation', backref='user', lazy=True)
 
@@ -48,7 +49,7 @@ class Reservation(db.Model):
 
     def calculate_cost(self):
         lot_price = self.spot.lot.price_per_unit_time
-        end_time = self.leaving_timestamp or datetime.now() # The time it leaves or the entire fare he booked the lot for
+        end_time = self.leaving_timestamp or datetime.now() # The time it leaves or the entire fare he booked the lot
         duration = (end_time - self.parking_timestamp).total_seconds() / 3600
         return round(duration * lot_price, 2)
 

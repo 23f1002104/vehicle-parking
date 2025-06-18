@@ -1,5 +1,4 @@
 flask
 flask-login
-flask_sqlalchemy
-flask_migrate
+flask-sqlalchemy
 python-dotenv

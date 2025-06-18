@@ -9,32 +9,27 @@
     {% endblock %}
 </head>
 <body>
-    <div class="container">
-        {% block navbar %}
-            
-        {% endblock %}
-    </div>
+    {% block navbar %}
+        
+    {% endblock %}
 
     <div class="container">
-        {% with messages = get_flashed_messages() %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             
-            {% for message in messages %}
-                {% if "success" in message.lower() %}
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+            
+                <div class="container mt-2">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% else %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
                 </div>
-                {% endif %}
-            {% endfor %}
+            
             
         {% endif %}
-    {% endwith %}
+        {% endwith %}
     </div>
 
     <div class="container">
