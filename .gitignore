@@ -192,3 +192,11 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Code-Editor specific files
+#  These files are specific to code editors and IDEs, and can be ignored if you don't want to
+.vscode/
+
+# project specific files
+#  These files are specific to the project and can be ignored if you don't want to include them
+# createAdmin.py

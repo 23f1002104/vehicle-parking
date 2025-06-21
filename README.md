@@ -1,4 +1,4 @@
-# vehicle-parking
+# vehicle-parking-Vpark-1.0
 
 ---
 
@@ -8,12 +8,42 @@ We define our models in `./Models/models.py` as per the given descriptions in **
 
 ## Controllers
 All the app routes are added here,`./Controllers/routes.py` including authentications. The authentications are handeled by `flask-login` and in future a new decorator `@admin_required` will be defined that will allow some functionalities to be Admin only.
+
 ---
 
 ## TODO:
 
+---
+
+**File Structure**
+- [ ] Create a file structure as per the given statement.
+    - [x] Controllers
+    - [x] Models
+    - [ ] Templates
+    - [ ] Static (Unused for now, but may be used in future)
+- [ ] Inside `templates` create separate folders for `admin` and `user` templates.
+
+---
+
+**Optional**
+- [ ] Create a folder `Api` for API related files(`api.py`,`resources.py`).
+- [ ] Create a folder `Forms` for `Flask-WTF` forms (if used).
+
+**Frontend**
+- [x] Create navbars and alert messeges (flash messeges).
+- [x] Use [Modals](https://getbootstrap.com/docs/5.0/components/modal/) (BootStrap5) to book or check out parking spots. Also, may be used in Creating and deleting parking lots by admin.
+
+---
+
+**Optional**
+- [ ] Carousels for about page
+
+---
+
+**Backend**
 - [x] Create Database as per given statement. 
 - [x] Implement authentication for users using `flask-login`
+- [ ] Use `abort` from `flask` to raise errors
 - [ ] Create admins and test
 - [ ] Make `@admin_required` decorator to check user.is_admin
 - [ ] Make Admin Dashboard
@@ -29,7 +59,7 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
     - [ ] CRUD on parking spots
     - [ ] Track timestamps for reservation and View parking history
 
-
+---
 
 **Optional**
 - [ ] API Integration
