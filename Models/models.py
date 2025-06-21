@@ -1,4 +1,3 @@
-from email.policy import default
 from uuid import uuid4
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
