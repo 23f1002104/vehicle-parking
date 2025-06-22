@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+
+{% block navbar %}
+    
+{% endblock %}
+
+
+{% block content %}
+    <div class="container my-4 text-center border rounded p-3">
+        <h4>Parking Spot#{{ parking_spot.id }}</h4>
+        <p class="text-success fw-semibold my-2">Status: {{ parking_spot.status }}</p>
+        {% if parking_spot.is_available() %}
+            <p class="text-success">This parking spot is available.</p>
+            <div class="container">
+                <h4>Last Used:</h4>
+                {% if parking_spot.reservations %}
+                    <p class="text-secondary">Car ID: {{ parking_spot.reservations[-1].car_id }}</p>
+                    <p class="text-secondary">Reserved at: {{ parking_spot.reservations[-1].parking_timestamp }}</p>
+                    {% if parking_spot.reservations[-1].leaving_timestamp %}
+                        <p class="text-secondary">Leaving at: {{ parking_spot.reservations[-1].leaving_timestamp }}</p>
+                        <p class="text-secondary">Cost: ₹{{ parking_spot.reservations[-1].calculate_cost() }}</p>
+                    {% else %}
+                        <p class="text-secondary">Leaving time not set yet.</p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-secondary">This spot has never been used.</p>
+                {% endif %}
+            </div>
+        {% else %}
+            <p class="text-danger">This parking spot is occupied by {{ parking_spot.reservations[-1].user.full_name }}</p>
+            <br>
+            <p class="text-secondary">Car ID: {{ parking_spot.reservations[-1].car_id }}</p>
+            <p class="text-secondary">Reserved at: {{ parking_spot.reservations[-1].parking_timestamp }}</p>
+            {% if parking_spot.reservations[-1].leaving_timestamp %}
+                <p class="text-secondary">Leaving at: {{ parking_spot.reservations[-1].leaving_timestamp }}</p>
+                <p class="text-secondary">Cost: INR {{ parking_spot.reservations[-1].calculate_cost() }}</p>
+            {% else %}
+                <p class="text-secondary">Leaving time not set yet.</p>
+            {% endif %}
+        {% endif %}
+        <p class="text-secondary">Lot ID: {{ parking_spot.lot_id }}</p>
+        <hr>
+        {% if parking_spot.is_available() %}
+            <form action="{{ url_for('delete_parking_spot', admin_id=current_user.id, lot_id=parking_spot.lot_id, spot_id=parking_spot.id) }}" method="POST">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        {% else %}
+            <p class="text-muted">Parking spot in use. Can not be deleted.</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -10,7 +10,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        {% if user.is_admin %}
+                        {% if current_user.is_admin %}
                             <a class="nav-link active" aria-current="page" href="{{ url_for('admin_dashboard', id=current_user.id) }}">Home</a>
                         {% else %}
                             <a class="nav-link active" aria-current="page" href="{{ url_for('user_dashboard', id=current_user.id) }}">Home</a>
@@ -28,28 +28,41 @@
     </nav> 
 {% endblock %}
 
+
+
 {% block contents %}
-    <form class="row g-3" method="post">
-    <br>
-    <div class="col-md-6">
-        <label for="updatefullname" class="form-label fw-bold text-dark">Full Name</label>
-        <input type="text" class="form-control" id="updatefullname" name="fullname" value="{{ current_user.full_name }}">
+    <div class="contents">
+        <form class="row g-3" method="post" action="{{ url_for('editProfile', id=current_user.id, is_admin=current_user.is_admin) }}">
+        <br>
+        <div class="col-md-6 mb-3">
+            <label for="updatefullname" class="form-label fw-bold text-dark">Full Name</label>
+            <input type="text" class="form-control" id="updatefullname" name="fullname" value="{{ current_user.full_name }}">
+        </div>
+        <br>
+        <div class="col-md-6 mb-3">
+            <label for="updatename" class="form-label fw-bold text-dark">Username</label>
+            <input type="text" class="form-control" id="updatename" name="username" value="{{ current_user.username }}">
+        </div>
+        <br>
+        <div class="col-md-6 mb-3">
+            <label for="updateEmail" class="form-label fw-bold text-dark">Email</label>
+            <input type="email" class="form-control" id="updateEmail" name="email" value="{{ current_user.email }}">
+        </div>
+        <br>
+        <div class="col-md-6 mb-3">
+            <label for="updatePassword" class="form-label fw-bold text-dark">New Password</label>
+            <input type="password" class="form-control" id="updatePassword" name="new_password" placeholder="Leave blank if you don't want to change">
+        </div>
+        <br>
+        <div class="col-12 d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-primary me-md-2">Update</button>
+            {% if current_user.is_admin %}    
+                <a href="{{ url_for('admin_dashboard', id=current_user.id) }}" class="btn btn-secondary me-md-2">Cancel</a>
+            {% else %}
+                <a href="{{ url_for('user_dashboard', id=current_user.id) }}" class="btn btn-secondary me-md-2">Cancel</a>
+            {% endif %}
+        </div>
+        <br>
+        </form>
     </div>
-    <br>
-    <div class="col-md-6">
-        <label for="updatename" class="form-label fw-bold text-dark">Username</label>
-        <input type="text" class="form-control" id="updatename" name="username" value="{{ current_user.username }}">
-    </div>
-    <br>
-    <div class="col-md-6">
-        <label for="updateEmail" class="form-label fw-bold text-dark">Email</label>
-        <input type="email" class="form-control" id="updateEmail" name="email" value="{{ current_user.email }}">
-    </div>
-    <br>
-    <div class="col-12 d-grid gap-2 d-md-flex justify-content-md-end">
-        <button type="submit" class="btn btn-primary me-md-2">Update</button>
-        <button type="submit" class="btn btn-secondary me-md-2">Cancel</button>
-    </div>
-    <br>
-    </form>
 {% endblock %}

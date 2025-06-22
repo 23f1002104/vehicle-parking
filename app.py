@@ -21,7 +21,7 @@ login_manager.init_app(app)
 
 
 # import it at the end to avoid circular import issue
-from Controllers import routes
+import Controllers.routes
 from Models.models import User, ParkingLot, ParkingSpot, Reservation
 
 

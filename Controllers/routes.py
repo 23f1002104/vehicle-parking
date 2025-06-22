@@ -1,8 +1,11 @@
-from flask import render_template, redirect, url_for, request, flash, abort
+from hmac import new
+from flask import render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import joinedload  # To eager load from database
 from app import app, db, login_manager
 from Models.models import User, ParkingLot, ParkingSpot, Reservation
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -116,6 +119,8 @@ def user_list(admin_id):
 
 
 
+# CRUD functionalities for parking lots
+
 @app.route("/admin/<string:admin_id>/createLot", methods=['POST'])
 @login_required #TODO: change to `@admin_required`
 def create_parking_lot(admin_id):
@@ -145,8 +150,8 @@ def create_parking_lot(admin_id):
         # (Reference: "https://stackoverflow.com/questions/4201455/sqlalchemy-whats-the-difference-between-flush-and-commit")
         try:
             # Create parking spots for the new lot
-            for _ in range(max_spots):
-                new_spot = ParkingSpot(lot_id=new_lot.id)
+            for num in range(max_spots):
+                new_spot = ParkingSpot(id=num, lot_id=new_lot.id)
                 db.session.add(new_spot)
         except Exception as e:
             db.session.rollback()
@@ -163,17 +168,162 @@ def create_parking_lot(admin_id):
 
 
 
-@app.route("/admin/<string:admin_id>/viewLot/<string:lot_id>")
+@app.route("/admin/<string:admin_id>/viewLot/<string:lot_id>", methods=['GET'])
 @login_required #TODO: change to `@admin_required`
 def view_parking_lot(admin_id, lot_id):
+    """lazy loading is more about less memory and more computations at each function call, while eager loading 
+    would use more memory and more computations when the class is created and less computations when the function is called"""
+    parking_lot = ParkingLot.query.options(
+        joinedload(ParkingLot.spots).joinedload(ParkingSpot.reservations)
+    ).filter_by(id=lot_id).first()
+
+    # Check if the current user is an admin and matches the admin_id
     if not current_user.is_admin or current_user.id != admin_id:
         flash("Admin permission required! Access denied.", 'danger')
         return redirect(url_for('login'))
-    parking_lot = ParkingLot.query.get(lot_id)
+    
+    # Check if the parking lot exists
     if not parking_lot:
         flash("Parking lot not found.", "danger")
         return redirect(url_for('admin_dashboard', admin_id=admin_id))
+
     return render_template("view_parking_lot.html", parking_lot=parking_lot)
+
+
+@app.route("/admin/<string:admin_id>/editLot/<string:lot_id>", methods=['GET', 'POST'])
+@login_required #TODO: change to `@admin_required`
+def edit_parking_lot(admin_id, lot_id):
+    """lazy loading is more about less memory and more computations at each function call, while eager loading 
+    would use more memory and more computations when the class is created and less computations when the function is called"""
+    parking_lot = ParkingLot.query.options(
+        joinedload(ParkingLot.spots).joinedload(ParkingSpot.reservations)
+    ).filter_by(id=lot_id).first()
+
+    # Check if the current user is an admin and matches the admin_id
+    if not current_user.is_admin or current_user.id != admin_id:
+        flash("Admin permission required! Access denied.", 'danger')
+        return redirect(url_for('login'))
+    
+    # Check if the parking lot exists
+    if not parking_lot:
+        flash("Parking lot not found.", "danger")
+        return redirect(url_for('admin_dashboard', admin_id=admin_id))
+    
+    # Update parking lot details
+    if request.method == 'POST':
+        new_price = request.form.get("price_per_hour")
+        new_prime_location_name = request.form.get("prime_location_name")
+        new_address = request.form.get("address")
+        new_pin_code = request.form.get("pincode")
+        #TODO: to update max_spots we require to create or delete some parking spots. Needs additional logic.
+        # new_max_spots = request.form.get("max_spots")
+
+        # Update the parking lot details
+        parking_lot.price_per_hour = new_price
+        parking_lot.prime_location_name = new_prime_location_name
+        parking_lot.address = new_address
+        parking_lot.pin_code = new_pin_code
+        #TODO: Needed proper logic to update max_spots
+        # parking_lot.max_spots = new_max_spots
+
+        try:
+            db.session.commit()
+            flash("Parking lot details updated successfully!", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating parking lot details: {str(e)}", "danger")
+        return redirect(url_for('view_parking_lot', admin_id=admin_id, lot_id=lot_id))
+    
+    return render_template("edit_parking_lot.html", parking_lot=parking_lot)
+
+
+
+@app.route("/admin/<string:admin_id>/deleteLot/<string:lot_id>", methods=['POST'])
+@login_required #TODO: change to `@admin_required`
+def delete_parking_lot(admin_id, lot_id):
+    """Delete functionality for parking lots. Possible only when all parking spots are empty."""
+    if not current_user.is_admin or current_user.id != admin_id:
+        flash("Admin permission required! Access denied.", 'danger')
+        return redirect(url_for('login'))
+    
+    parking_lot = ParkingLot.query.options(joinedload(ParkingLot.spots)).filter_by(id=lot_id).first()
+
+    if not parking_lot:
+        flash("Parking lot not found.", "danger")
+        return redirect(url_for('admin_dashboard', admin_id=admin_id))
+    
+    # If all spots are available, delete the parking lot and its spots
+    if all(spot.status == 'A' for spot in parking_lot.spots):
+        try:
+            db.session.delete(parking_lot)
+            db.session.commit()
+            flash("Parking lot and its spots deleted successfully.", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error deleting parking lot: {str(e)}", "danger")
+        return redirect(url_for('admin_dashboard', admin_id=admin_id))
+
+    else:
+        flash("Cannot delete lot: Some spots are occupied.", "danger")
+        return redirect(url_for('admin_dashboard', admin_id=current_user.id))
+
+    
+
+# On parking spots no create and update is allowed, so only read and delete.
+@app.route("/admin/<string:admin_id>/viewLot/<string:lot_id>/viewSpot/<string:spot_id>", methods=['GET'])
+@login_required #TODO: change to `@admin_required`
+def view_parking_spot(admin_id, lot_id, spot_id):
+    if not current_user.is_admin or current_user.id != admin_id:
+        flash("Admin permission required! Access denied.", 'danger')
+        return redirect(url_for('login'))
+
+    parking_lot = ParkingLot.query.filter_by(id=lot_id).first()
+    if not parking_lot:
+        flash("Parking lot not found.", "danger")
+        return redirect(url_for('admin_dashboard', admin_id=admin_id))
+
+    parking_spot = ParkingSpot.query.filter_by(id=spot_id, lot_id=lot_id).first()
+    if not parking_spot:
+        flash("Parking spot not found.", "danger")
+        return redirect(url_for('view_parking_lot', admin_id=admin_id, lot_id=lot_id))
+
+    return render_template("view_parking_spot.html", parking_lot=parking_lot, parking_spot=parking_spot)
+
+
+@app.route("/admin/<string:admin_id>/viewLot/<string:lot_id>/deleteSpot/<string:spot_id>", methods=['POST'])
+@login_required #TODO: change to `@admin_required`
+def delete_parking_spot(admin_id, spot_id, lot_id):
+    if not current_user.is_admin or current_user.id != admin_id:
+        flash("Admin permission required! Access denied.", 'danger')
+        return redirect(url_for('login'))
+
+    parking_lot = ParkingLot.query.filter_by(id=lot_id).first()
+    if not parking_lot:
+        flash("Parking lot not found.", "danger")
+        return redirect(url_for('admin_dashboard', admin_id=admin_id))
+
+    parking_spot = ParkingSpot.query.filter_by(id=spot_id, lot_id=lot_id).first()
+    if not parking_spot:
+        flash("Parking spot not found.", "danger")
+        return redirect(url_for('view_parking_lot', admin_id=admin_id, lot_id=lot_id))
+
+    try:
+        if parking_spot.is_available():
+            db.session.delete(parking_spot)
+            # reduce the max_spots from Parking Lot
+            parking_lot.max_spots -= 1  # Decrease the max_spots count
+            if parking_lot.max_spots == 0:
+                db.session.delete(parking_lot)
+            db.session.commit()
+            flash("Parking spot deleted successfully.", "success")
+        else:
+            flash("Cannot delete spot: It is currently occupied.", "danger")
+    
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting parking spot: {str(e)}", "danger")
+
+    return redirect(url_for('view_parking_lot', admin_id=admin_id, lot_id=lot_id))
 
 
 ### User functionalities
@@ -188,22 +338,60 @@ def user_dashboard(user_id):
 
 
 #TODO: Edit profile fuctionality for both Users and Admins
-@app.route("/user/<string:id>/edit", methods=['GET','POST'], defaults={'is_admin': False} )
-@app.route("/admin/<string:id>/edit", methods=['GET','POST'], defaults={'is_admin': True} )
+@app.route("/user/<string:id>/editprofile", methods=['GET','POST'], defaults={'is_admin': False} )
+@app.route("/admin/<string:id>/editprofile", methods=['GET','POST'], defaults={'is_admin': True} )
 @login_required
-def edit(id, is_admin):
+def editProfile(id, is_admin):
     if current_user.id == id:
-        if request.method == "GET":
-            return render_template('editProfile.html')
-        else:
+        if request.method == "POST":
             user = User.query.filter_by(id=id).first()
-        if not is_admin and not user.is_admin:
-            pass
-        if is_admin and user.is_admin:
-            pass
+            if (not is_admin and not user.is_admin) or (is_admin and user.is_admin):
+                # Get form data
+                full_name = request.form.get("full_name")
+                email = request.form.get("email")
+                username = request.form.get("username").strip()
+
+                # unique username validation
+                existing_user = User.query.filter_by(username=username).first()
+                if existing_user and existing_user.id != id:
+                    flash("Username already exists. Please choose a different one.", "danger")
+                    return redirect(url_for('editProfile', id=id, is_admin=is_admin))
+                
+                # unique email validation
+                existing_email = User.query.filter_by(email=email).first()
+                if existing_email and existing_email.id != id:
+                    flash("Email already exists. Please choose a different one.", "danger")
+                    return redirect(url_for('editProfile', id=id, is_admin=is_admin))
+                
+                # If a new password is provided, hash it
+                new_password = request.form.get("new_password")
+                user.password = generate_password_hash(new_password) if new_password.strip() else user.password
+
+                # Update user details
+                user.full_name = full_name
+                user.email = email
+                user.username = username
+
+                try:
+                    db.session.commit()
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error updating profile: {str(e)}", "danger")
+                    return redirect(url_for('editProfile', id=id, is_admin=is_admin))
+                
+                flash("Profile updated successfully!", "success")
+                return redirect(url_for('user_dashboard', user_id=id)) if not is_admin else redirect(url_for('admin_dashboard', admin_id=id))
+            else:
+                flash("Permission Denied", "danger")
+                return redirect(url_for('login'))
+            
+        # Handle GET request
+        return render_template('editProfile.html')
     else:
-        abort(403)
-    pass
+        flash("Permission Denied! Invalid User.", "danger")
+        return redirect(url_for('login'))
+
+
 
 
 

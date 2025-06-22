@@ -16,11 +16,7 @@
                         <a class="nav-link active" aria-current="page" href="{{ url_for('user_list') }}">Users</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('services') }}">Services</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" aria-disabled="true">Stats</a>
-                        <!-- <a class="nav-link active" aria-current="page" href="{{ url_for('stats') }}">Stats</a> -->
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('summary', admin_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
                 <form class="d-flex" role="search">
@@ -37,19 +33,29 @@
         <table class="table-responsive">
             <thead class="table align-middle">
                 <tr>
-                <th scope="col">Id</th>
+                <th scope="col">User Id</th>
                 <th scope="col">Full Name</th>
                 <th scope="col">Username</th>
                 <th scope="col">Email Id</th>
+                <th scope="col">Spots Used</th>
+                <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>{{ loop.index }}</td> <!-- Using loop.index as enumerate function throws error inside jinja -->
+                    <td>{{ user.id }}</td>
                     <td>{{ user.full_name }}</td>
                     <td>{{ user.username }}</td>
                     <td>{{ user.email_id }}</td>
+                    <td>{{ user.reservations | map(attribute='spot_id') | join(', ') }}</td> <!-- This accesses the list of `Reservation` objects associated with the current user and the `map` filter grabs the `spot_id` from each reservation. -->
+                    <td>
+                        {% if user.is_flagged %}
+                            <a href="{{ url_for('user_list', admin_id=current_user.id) }}" class="btn btn-warning">Flag</a>
+                        {% else %}
+                            <a href="{{ url_for('user_list', admin_id=current_user.id) }}" class="btn btn-success">Unflag</a>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

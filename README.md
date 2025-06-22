@@ -16,10 +16,10 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 ---
 
 **File Structure**
-- [ ] Create a file structure as per the given statement.
+- [x] Create a file structure as per the given statement.
     - [x] Controllers
     - [x] Models
-    - [ ] Templates
+    - [x] Templates
     - [ ] Static (Unused for now, but may be used in future)
 - [ ] Inside `templates` create separate folders for `admin` and `user` templates.
 
@@ -28,6 +28,8 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 **Optional**
 - [ ] Create a folder `Api` for API related files(`api.py`,`resources.py`).
 - [ ] Create a folder `Forms` for `Flask-WTF` forms (if used).
+
+---
 
 **Frontend**
 - [x] Create navbars and alert messeges (flash messeges).
@@ -43,15 +45,14 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 **Backend**
 - [x] Create Database as per given statement. 
 - [x] Implement authentication for users using `flask-login`
-- [ ] Use `abort` from `flask` to raise errors
-- [ ] Create admins and test
+- [x] Create admins and test
 - [ ] Make `@admin_required` decorator to check user.is_admin
-- [ ] Make Admin Dashboard
-- [ ] Implement admin functionalities
-    - [ ] CRUD on parking lots
-    - [ ] Automatically create parking spots based on the maximum capacity of the lot.
-    - [ ] View parking spots details.
-    - [ ] Admin should see a list of all users and their details
+- [x] Make Admin Dashboard
+- [x] Implement admin functionalities
+    - [x] CRUD on parking lots
+    - [x] Automatically create parking spots based on the maximum capacity of the lot.
+    - [x] View parking spots details and delete a spot.
+    - [x] Admin should see a list of all users and their details
     - [ ] ~Flag an user~
     - [ ] Create a field in the admin dashboard to search for a user or spot to see if a spot is vacant or occupied 
 - [ ] User dashboard
@@ -64,5 +65,5 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 **Optional**
 - [ ] API Integration
 - [ ] Implement Stats page (ChartJS)
+- [ ] Try using `flask-wtf` for form validation and CSRF protection
 - [ ] Use flask blueprints
-- [ ] ~Try using `flask-wtf` for form validation and CSRF protection~

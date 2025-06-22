@@ -10,18 +10,14 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_dashboard', id=current_user.id) }}">Home</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_dashboard', admin_id=current_user.id) }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_list') }}">Users</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_list', admin_id=current_user.id) }}">Users</a>
                     </li>
                     <li class="nav-item">
                         <!-- ! make the link active when `summary` is created -->
-                        <a class="nav-link disabled" aria-current="page" href="{{ url_for('summary') }}">Summary</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" aria-disabled="true">Stats</a>
-                        <!-- <a class="nav-link active" aria-current="page" href="{{ url_for('stats') }}">Stats</a> -->
+                        <a class="nav-link disabled" aria-current="page" href="{{ url_for('summary', admin_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
                 <form class="d-flex" role="search">
@@ -30,7 +26,7 @@
                 </form>
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('edit', current_user.id) }}">Edit Account Info</a>
+                        <a class="nav-link active" href="{{ url_for('edit', id=current_user.id) }}">Edit Account Info</a>
                     </li>
                     <li class="nav-item">
                         <a class="btn btn-outline-danger" href="{{ url_for('logout') }}">Log Out</a>
@@ -59,8 +55,8 @@
                 <tbody>
                     {% for lot in p_lots %}
                     <tr>
-                        <td>{{ loop.index }}</td> <!-- Using loop.index as enumerate function is unavailable inside jinja -->
-                        <td>{{ lot.prime_location_name }} <br> {{ lot.address }} <br> {{ lot.pin_code }} </td>
+                        <td>{{ lot.id }}</td>
+                        <td><a href="{{ url_for('view_parking_lot', admin_id=current_user.id, lot_id=lot.id) }}">{{ lot.prime_location_name }} <br> {{ lot.address }} <br> {{ lot.pin_code }}</a></td>
                         <td>{{ lot.total_available() }}</td>
                         <td>{{ lot.price }}</td>
                     </tr>
@@ -112,7 +108,7 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-success">Add</button>
+                        <button type="submit" class="btn btn-success">Add</button>
                     </div>
                 </div>
                 </div>

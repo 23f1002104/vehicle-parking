@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+
+{% block navbar %}
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">V-Park</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_dashboard', admin_id=current_user.id) }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_list', admin_id=current_user.id) }}">Users</a>
+                    </li>
+                    <li class="nav-item">
+                        <!-- ! make the link active when `summary` is created -->
+                        <a class="nav-link disabled" aria-current="page" href="{{ url_for('summary', admin_id=current_user.id) }}">Summary</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+<style>
+.spot-available {
+    background-color: #d1f7c4 !important;
+}
+.spot-unavailable {
+    background-color: #f8d7da !important;
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container my-4 text-center border rounded p-3">
+    <h4>Parking#{{ parking_lot.id }}</h4>
+    <div class = "edit-delete">
+        <a href="{{url_for('edit_parking_lot', admin_id=current_user.id, lot_id=parking_lot.id)}}" class="text-warning fw-bold">Edit</a>
+        <a href="{{url_for('delete_parking_lot', admin_id=current_user.id, lot_id=parking_lot.id)}}" class="text-danger fw-bold">Delete</a>
+    </div>
+    
+    <p class="text-success fw-semibold my-2">(Available Spots: {{ parking_lot.total_available() }}/{{ parking_lot.total_spots }})</p>
+    
+    <hr>
+
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            {% for spot in parking_lot.spots %}
+                <a href="{{ url_for('view_parking_spot', admin_id=current_user.id, lot_id=parking_lot.id, spot_id=spot.id) }}"
+                class="text-decoration-none">
+                    <div class="p-3 text-center fw-bold rounded border
+                        {% if spot.status == 'A' %}spot-available{% else %}spot-unavailable{% endif %}"
+                        style="width: 60px; height: 60px; color: #000; border: 2px solid #0d6efd; background-color: {% if spot.status == 'A' %}#d1f7c4{% else %}#f8d7da{% endif %};">
+                        {{ spot.id }}
+                        {{ spot.status }}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}

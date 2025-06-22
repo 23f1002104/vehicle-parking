@@ -24,8 +24,9 @@ def createAdmin():
             is_admin=True
         )
         try:
-            db.session.add(admin1, admin2, admin3)
+            db.session.add_all([admin1, admin2, admin3])
             db.session.commit()
+            print("Admin users created successfully.")
         except Exception as e:
             db.session.rollback()
             print(f"Error creating admin user: {e}")
@@ -34,4 +35,3 @@ def createAdmin():
     
 if __name__ == "__main__":
     createAdmin()
-    print("Admin users created successfully.")

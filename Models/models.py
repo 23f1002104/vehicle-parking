@@ -1,8 +1,10 @@
+import re
 from uuid import uuid4
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
-from shortuuid import uuid 
+from shortuuid import uuid
+from sqlalchemy import Nullable 
 
 db = SQLAlchemy()
 
@@ -29,7 +31,7 @@ class ParkingLot(db.Model):
     pin_code = db.Column(db.String(10), nullable=False)
     max_spots = db.Column(db.Integer, nullable=False)
 
-    spots = db.relationship('ParkingSpot', backref='lot', lazy=True)
+    spots = db.relationship('ParkingSpot', backref='lot', lazy=True, cascade='all, delete-orphan')  # Cascade ensures that if a parking lot is deleted all of its children spots will be deleted as well
 
     def total_occupied(self):
         """Returns the total number of occupied parking spots in the lot."""
@@ -51,12 +53,18 @@ class ParkingLot(db.Model):
 
 # Parking Spot
 class ParkingSpot(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, nullable=False)
     lot_id = db.Column(db.String, db.ForeignKey('parking_lot.id'), nullable=False)
     status = db.Column(db.String(1), default='A')  # A: Available, O: Occupied
 
-    reservations = db.relationship('Reservation', backref='spot', lazy=True)
+    reservations = db.relationship('Reservation', backref='spot', lazy=True, order_by="Reservation.parking_timestamp")  # Order by parking_timestamp to get a chronological ordering
 
+    __table_args__ = (
+        db.PrimaryKeyConstraint('id', 'lot_id'), # ref: "https://www.reddit.com/r/flask/comments/g3tje5/composite_key_for_flasksqlalchemy/"
+    )
+
+    def is_available(self):
+        return self.status == 'A'
 
 # Reservation
 class Reservation(db.Model):
@@ -66,6 +74,8 @@ class Reservation(db.Model):
     car_id = db.Column(db.String(10), unique=True, nullable=False)
     parking_timestamp = db.Column(db.DateTime, default=datetime.now())
     leaving_timestamp = db.Column(db.DateTime, nullable=True)
+
+
 
     def calculate_cost(self):
         lot_price = self.spot.lot.price_per_hour
