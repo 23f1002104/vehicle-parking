@@ -2,7 +2,7 @@ from app import app
 from Models.models import User, db
 from werkzeug.security import generate_password_hash
 
-def createAdmin():
+def create_admin():
     with app.app_context():
     # Customize the admin data
         admin1 = User(
@@ -34,4 +34,4 @@ def createAdmin():
         return
     
 if __name__ == "__main__":
-    createAdmin()
+    create_admin()

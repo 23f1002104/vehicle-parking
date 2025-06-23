@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">V-Park</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a href="{{ url_for('admin_bp.admin_dashboard', admin_id=current_user.id) }}" class="nav-link">Home</a>
+                    </li>
+                </ul>
+                <li class="nav-item">
+                    <a class="btn btn-outline-danger" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
+                </li>
+            </div>
+        </div>
+    </nav> 
+{% endblock %}
+
+
+
+{% block contents %}
+    <div class="contents">
+        <form class="row g-3" method="post" action="{{ url_for('admin_bp.edit_admin_profile', admin_id=current_user.id) }}">
+        <br>
+        <div class="col-md-6 mb-3">
+            <label for="updatefullname" class="form-label fw-bold text-dark">Full Name</label>
+            <input type="text" class="form-control" id="updatefullname" name="full_name" value="{{ current_user.full_name }}">
+        </div>
+        <br>
+        <div class="col-md-6 mb-3">
+            <label for="updatename" class="form-label fw-bold text-dark">Username</label>
+            <input type="text" class="form-control" id="updatename" name="username" value="{{ current_user.username }}" required>
+        </div>
+        <br>
+        <div class="col-md-6 mb-3">
+            <label for="updateEmail" class="form-label fw-bold text-dark">Email</label>
+            <input type="email" class="form-control" id="updateEmail" name="email" value="{{ current_user.email }}" required>
+        </div>
+        <br>
+        <div class="col-md-6 mb-3">
+            <!-- TODO: Make password update method better -->
+            <label for="updatePassword" class="form-label fw-bold text-dark">New Password</label>
+            <input type="password" class="form-control" id="updatePassword" name="new_password" placeholder="Leave blank if you don't want to change">
+        </div>
+        <br>
+        <div class="col-12 d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-primary me-md-2">Update</button>
+            <a href="{{ url_for('admin_bp.admin_dashboard', admin_id=current_user.id) }}" class="btn btn-secondary me-md-2">Cancel</a>
+        </div>
+        <br>
+        </form>
+    </div>
+{% endblock %}
+    

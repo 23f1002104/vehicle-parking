@@ -10,13 +10,13 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_dashboard', id=current_user.id) }}">Home</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.admin_dashboard', admin_id=current_user.id) }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_list') }}">Users</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.user_list', admin_id=current_user.id) }}">Users</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('summary', admin_id=current_user.id) }}">Summary</a>
+                        <a class="nav-link disabled" aria-current="page" href="{{ url_for('admin_bp.summary', admin_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
                 <form class="d-flex" role="search">
@@ -30,8 +30,8 @@
 
 {% block contents %}
     <div class="contents" id="users">
-        <table class="table-responsive">
-            <thead class="table align-middle">
+        <table class="table table-striped align-middle">
+            <thead>
                 <tr>
                 <th scope="col">User Id</th>
                 <th scope="col">Full Name</th>
@@ -47,13 +47,13 @@
                     <td>{{ user.id }}</td>
                     <td>{{ user.full_name }}</td>
                     <td>{{ user.username }}</td>
-                    <td>{{ user.email_id }}</td>
+                    <td>{{ user.email }}</td>
                     <td>{{ user.reservations | map(attribute='spot_id') | join(', ') }}</td> <!-- This accesses the list of `Reservation` objects associated with the current user and the `map` filter grabs the `spot_id` from each reservation. -->
                     <td>
                         {% if user.is_flagged %}
-                            <a href="{{ url_for('user_list', admin_id=current_user.id) }}" class="btn btn-warning">Flag</a>
+                            <a href="{{ url_for('admin_bp.user_list', admin_id=current_user.id) }}" class="btn btn-success">Unflag</a>
                         {% else %}
-                            <a href="{{ url_for('user_list', admin_id=current_user.id) }}" class="btn btn-success">Unflag</a>
+                            <a href="{{ url_for('admin_bp.user_list', admin_id=current_user.id) }}" class="btn btn-danger">Flag</a>
                         {% endif %}
                     </td>
                 </tr>

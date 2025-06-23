@@ -10,18 +10,17 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        {% if current_user.is_admin %}
-                            <a class="nav-link active" aria-current="page" href="{{ url_for('admin_dashboard', id=current_user.id) }}">Home</a>
-                        {% else %}
-                            <a class="nav-link active" aria-current="page" href="{{ url_for('user_dashboard', id=current_user.id) }}">Home</a>
-                        {% endif %}
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.user_dashboard', user_id=current_user.id) }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('summary') }}">Summary</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.edit_user_profile', user_id=current_user.id) }}">Edit Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" aria-current="page" href="">Summary</a>
                     </li>
                 </ul>
                 <li class="nav-item">
-                    <a class="btn btn-outline-danger" href="{{ url_for('logout') }}">Log Out</a>
+                    <a class="btn btn-outline-danger" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
                 </li>
             </div>
         </div>
@@ -32,11 +31,11 @@
 
 {% block contents %}
     <div class="contents">
-        <form class="row g-3" method="post" action="{{ url_for('editProfile', id=current_user.id, is_admin=current_user.is_admin) }}">
+        <form class="row g-3" method="post" action="{{ url_for('user_bp.edit_user_profile', user_id=current_user.id) }}">
         <br>
         <div class="col-md-6 mb-3">
             <label for="updatefullname" class="form-label fw-bold text-dark">Full Name</label>
-            <input type="text" class="form-control" id="updatefullname" name="fullname" value="{{ current_user.full_name }}">
+            <input type="text" class="form-control" id="updatefullname" name="full_name" value="{{ current_user.full_name }}">
         </div>
         <br>
         <div class="col-md-6 mb-3">
@@ -56,11 +55,7 @@
         <br>
         <div class="col-12 d-grid gap-2 d-md-flex justify-content-md-end">
             <button type="submit" class="btn btn-primary me-md-2">Update</button>
-            {% if current_user.is_admin %}    
-                <a href="{{ url_for('admin_dashboard', id=current_user.id) }}" class="btn btn-secondary me-md-2">Cancel</a>
-            {% else %}
-                <a href="{{ url_for('user_dashboard', id=current_user.id) }}" class="btn btn-secondary me-md-2">Cancel</a>
-            {% endif %}
+            <a href="{{ url_for('user_bp.user_dashboard', user_id=current_user.id) }}" class="btn btn-secondary me-md-2">Cancel</a>
         </div>
         <br>
         </form>

@@ -6,7 +6,7 @@
 {% endblock %}
 
 
-{% block content %}
+{% block contents %}
     <div class="container my-4 text-center border rounded p-3">
         <h4>Parking Spot#{{ parking_spot.id }}</h4>
         <p class="text-success fw-semibold my-2">Status: {{ parking_spot.status }}</p>
@@ -42,7 +42,7 @@
         <p class="text-secondary">Lot ID: {{ parking_spot.lot_id }}</p>
         <hr>
         {% if parking_spot.is_available() %}
-            <form action="{{ url_for('delete_parking_spot', admin_id=current_user.id, lot_id=parking_spot.lot_id, spot_id=parking_spot.id) }}" method="POST">
+            <form action="{{ url_for('admin_bp.delete_parking_spot', admin_id=current_user.id, lot_id=parking_spot.lot_id, spot_id=parking_spot.id) }}" method="POST">
                 <button type="submit" class="btn btn-danger">Delete</button>
             </form>
         {% else %}

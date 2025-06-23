@@ -8,12 +8,13 @@
         
     {% endblock %}
 </head>
+
 <body>
     {% block navbar %}
         
     {% endblock %}
 
-    <div class="container">
+    <div class="container" id="flash-messages">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             
@@ -32,8 +33,14 @@
         {% endwith %}
     </div>
 
-    <div class="container">
-        {% block content %}
+    <div class="container" id="head">
+        {% block name %}
+            
+        {% endblock %}
+    </div>
+
+    <div class="container" id="content">
+        {% block contents %}
         
         {% endblock %}
     </div>

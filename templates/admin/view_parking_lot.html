@@ -11,14 +11,14 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_dashboard', admin_id=current_user.id) }}">Home</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.admin_dashboard', admin_id=current_user.id) }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_list', admin_id=current_user.id) }}">Users</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.user_list', admin_id=current_user.id) }}">Users</a>
                     </li>
                     <li class="nav-item">
                         <!-- ! make the link active when `summary` is created -->
-                        <a class="nav-link disabled" aria-current="page" href="{{ url_for('summary', admin_id=current_user.id) }}">Summary</a>
+                        <a class="nav-link disabled" aria-current="page" href="{{ url_for('admin_bp.summary', admin_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
                 <form class="d-flex" role="search">
@@ -30,34 +30,49 @@
     </nav>
 <style>
 .spot-available {
-    background-color: #d1f7c4 !important;
+    background-color: #0d7c1cd4 !important;
 }
 .spot-unavailable {
-    background-color: #f8d7da !important;
+    background-color: #eb303f !important;
 }
 </style>
 {% endblock %}
 
 
-{% block content %}
+{% block contents %}
     <div class="container my-4 text-center border rounded p-3">
     <h4>Parking#{{ parking_lot.id }}</h4>
+    <h5>Cost {{ parking_lot.price_per_hour }} INR</h5>
+    <p class="text-center">
+        <strong>Prime Location:</strong> {{ parking_lot.prime_location_name }}<br>
+        <strong>Address:</strong> {{ parking_lot.address }}, {{ parking_lot.pin_code }}<br>
+    </p>
     <div class = "edit-delete">
-        <a href="{{url_for('edit_parking_lot', admin_id=current_user.id, lot_id=parking_lot.id)}}" class="text-warning fw-bold">Edit</a>
-        <a href="{{url_for('delete_parking_lot', admin_id=current_user.id, lot_id=parking_lot.id)}}" class="text-danger fw-bold">Delete</a>
+        <a href="{{url_for('admin_bp.edit_parking_lot', admin_id=current_user.id, lot_id=parking_lot.id)}}" class="btn-primary fw-bold">Edit</a>
+        <!--! a tags send GET requests only  -->
+        <form method="POST" action="{{ url_for('admin_bp.delete_parking_lot', admin_id=current_user.id, lot_id=parking_lot.id) }}">
+            <button type="submit" class="btn btn-link text-danger fw-bold">
+                Delete
+            </button>
+        </form>
+
     </div>
     
-    <p class="text-success fw-semibold my-2">(Available Spots: {{ parking_lot.total_available() }}/{{ parking_lot.total_spots }})</p>
+    <p class="text-success fw-semibold my-2">(Available Spots: {{ parking_lot.total_available() }}/{{ parking_lot.max_spots }})</p>
     
     <hr>
 
         <div class="d-flex flex-wrap justify-content-center gap-2">
             {% for spot in parking_lot.spots %}
-                <a href="{{ url_for('view_parking_spot', admin_id=current_user.id, lot_id=parking_lot.id, spot_id=spot.id) }}"
+                <a href="{{ url_for('admin_bp.view_parking_spot', admin_id=current_user.id, lot_id=parking_lot.id, spot_id=spot.id) }}"
                 class="text-decoration-none">
                     <div class="p-3 text-center fw-bold rounded border
                         {% if spot.status == 'A' %}spot-available{% else %}spot-unavailable{% endif %}"
-                        style="width: 60px; height: 60px; color: #000; border: 2px solid #0d6efd; background-color: {% if spot.status == 'A' %}#d1f7c4{% else %}#f8d7da{% endif %};">
+                        style="width: 80px;
+                        height: 80px; 
+                        color: #000;
+                        border: 3px solid #0d6efd; 
+                        background-color: {% if spot.status == 'A' %}#0d7c1cd4{% else %}#eb303f{% endif %};">
                         {{ spot.id }}
                         {{ spot.status }}
                     </div>
