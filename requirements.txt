@@ -1,4 +1,6 @@
+requests
 flask
 flask-login
 flask-sqlalchemy
 python-dotenv
+rapidfuzz # for search functionality

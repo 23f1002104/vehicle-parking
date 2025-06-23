@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from Models.models import User, ParkingLot, ParkingSpot
+from Models.models import User, ParkingLot, ParkingSpot, Reservation
 from Models.models import db
 from sqlalchemy.orm import joinedload # To eager load from database
 from werkzeug.security import generate_password_hash
@@ -20,7 +20,6 @@ def admin_required(f):
     return func
 
 
-#? admin.py
 
 ### Admin Functionalities
 @admin_bp.route("/<string:admin_id>/dashboard/")
@@ -32,35 +31,6 @@ def admin_dashboard(admin_id):
         return redirect(url_for('auth_bp.login'))
     return render_template("admin/admin_dashboard.html", admin_id=admin_id, parking_lots=parking_lots)
 
-
-
-@admin_bp.route("/<string:admin_id>/summary", methods=['GET', 'POST'])
-def summary(admin_id):
-    if not current_user.is_admin or current_user.id != admin_id:
-        flash("Admin permission required! Access denied.", 'danger')
-        return redirect(url_for('auth_bp.login'))
-    
-    # Fetch all parking lots and their details
-    parking_lots = ParkingLot.query.options(
-        joinedload(ParkingLot.spots).joinedload(ParkingSpot.reservations)
-    ).all()
-    
-    # Calculate total revenue and other statistics
-    total_revenue = sum(spot.get_total_revenue() for lot in parking_lots for spot in lot.spots if spot.status == 'O')
-    
-    return render_template("admin/summary.html", parking_lots=parking_lots, total_revenue=total_revenue)
-
-@admin_bp.route("/<string:admin_id>/users", methods=['GET', 'POST'])
-@admin_required #** change to `@admin_required`
-def user_list(admin_id):
-    if not current_user.is_admin or current_user.id != admin_id:
-        flash("Admin permission required! Access denied.", 'danger')
-        return redirect(url_for('auth_bp.login'))
-    
-    #TODO: Implement flagging users
-    
-    users = User.query.filter_by(is_admin=False).all()  # Fetch all non-admin users
-    return render_template("admin/user_list.html", users=users)
 
 
 @admin_bp.route("/<string:admin_id>/editprofile", methods=['GET','POST'])
@@ -114,6 +84,97 @@ def edit_admin_profile(admin_id):
     else:
         flash("Permission Denied! Invalid User.", "danger")
         return redirect(url_for('auth_bp.login'))
+
+
+@admin_bp.route("/<string:admin_id>/search", methods=['GET'])
+@admin_required
+def search(admin_id):
+    from rapidfuzz import fuzz, utils
+    query = request.args.get("query", "").strip()
+    field = request.args.get("field", "").strip() or "prime_location_name"  # Default search field
+
+    if not query:
+        return render_template("admin/admin_search.html", results=[], query=query, field=field, admin_id=admin_id)
+
+    processed_query = utils.default_process(query)
+    threshold = 80 # needs to be adjusted for better results
+    results = []
+
+    # ParkingLot Search
+    if field in ("parking_lot", "prime_location_name"):
+        for lot in ParkingLot.query.all():
+            combined = " ".join(filter(None, [lot.prime_location_name, lot.address, lot.pin_code]))
+            score = fuzz.WRatio(processed_query, combined, processor=utils.default_process, score_cutoff=threshold)
+            # print(score)
+            if score > threshold:
+                results.append(lot)
+            else:
+                pass # print(f"Try using better query. Could not find better match")
+        
+
+    # User Search
+    elif field == "user":
+        for user in User.query.filter_by(is_admin=False).all():
+            combined = " ".join(filter(None, [user.full_name, user.username, user.email]))
+            score = fuzz.WRatio(processed_query, combined, processor=utils.default_process, score_cutoff=threshold)
+            # print(score)
+            if score > threshold:
+                results.append(user)
+            else:
+                pass # print(f"Try using better query. Could not find better match")
+
+    # Reservation Search
+    elif field == "reservations":
+        # use eager load as reservation has foreign keys to user and parking_lot
+        for reservation in Reservation.query.options(joinedload(Reservation.user), joinedload(Reservation.parking_lot)).all():
+            lot = reservation.parking_lot
+            if lot:
+                combined = " ".join(filter(None, [lot.prime_location_name, lot.address, lot.pin_code]))
+                score = fuzz.WRatio(processed_query, combined, processor=utils.default_process, score_cutoff=threshold)
+                # print(score)
+                if score > threshold:
+                    results.append(reservation)
+                else:
+                    pass # print(f"Try using better query. Could not find better match")
+
+    # Deduplicate by object ID
+    results_list = list({getattr(obj, 'id', id(obj)): obj for obj in results}.values())
+    results = results_list if len(results_list) > 0 else ["Try using better query or field. Could not find better match"]
+    print(results, type(query), field) # Debugging
+    return render_template("admin/admin_search.html", results=results, query=query, field=field, admin_id=admin_id)
+
+
+
+@admin_bp.route("/<string:admin_id>/summary", methods=['GET', 'POST'])
+def summary(admin_id):
+    if not current_user.is_admin or current_user.id != admin_id:
+        flash("Admin permission required! Access denied.", 'danger')
+        return redirect(url_for('auth_bp.login'))
+    
+    # Fetch all parking lots and their details
+    parking_lots = ParkingLot.query.options(
+        joinedload(ParkingLot.spots).joinedload(ParkingSpot.reservations)
+    ).all()
+    
+    # Calculate total revenue and other statistics
+    total_revenue = sum(spot.get_total_revenue() for lot in parking_lots for spot in lot.spots if spot.status == 'O')
+    
+    return render_template("admin/summary.html", parking_lots=parking_lots, total_revenue=total_revenue)
+
+
+
+
+@admin_bp.route("/<string:admin_id>/users", methods=['GET', 'POST'])
+@admin_required #** change to `@admin_required`
+def user_list(admin_id):
+    if not current_user.is_admin or current_user.id != admin_id:
+        flash("Admin permission required! Access denied.", 'danger')
+        return redirect(url_for('auth_bp.login'))
+    
+    #TODO: Implement flagging users
+    
+    users = User.query.filter_by(is_admin=False).all()  # Fetch all non-admin users
+    return render_template("admin/user_list.html", users=users)
 
 # CRUD functionalities for parking lots
 

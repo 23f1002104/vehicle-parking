@@ -11,6 +11,10 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 
 ---
 
+## Instructions
+
+---
+
 ## TODO:
 
 ---
@@ -21,7 +25,7 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
     - [x] Models
     - [x] Templates
     - [ ] Static (Unused for now, but may be used in future)
-- [ ] Inside `templates` create separate folders for `admin` and `user` templates.
+- [x] Inside `templates` create separate folders for `admin` and `user` templates.
 
 ---
 
@@ -38,7 +42,7 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 ---
 
 **Optional**
-- [ ] Carousels for about page
+- [ ] ~Carousels for about page~
 
 ---
 
@@ -46,7 +50,7 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 - [x] Create Database as per given statement. 
 - [x] Implement authentication for users using `flask-login`
 - [x] Create admins and test
-- [ ] Make `@admin_required` decorator to check user.is_admin
+- [x] Make `@admin_required` decorator to check user.is_admin
 - [x] Make Admin Dashboard
 - [x] Implement admin functionalities
     - [x] CRUD on parking lots
@@ -54,8 +58,9 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
     - [x] View parking spots details and delete a spot.
     - [x] Admin should see a list of all users and their details
     - [ ] ~Flag an user~
-    - [ ] Create a field in the admin dashboard to search for a user or spot to see if a spot is vacant or occupied 
-- [ ] User dashboard
+    - [x] Create a field in the admin dashboard to search for a user, parking lot or reservation <!--TODO: improvement needed  -->
+- [x] User dashboard
+- [x] `user_requied` decorator to check if user is logged in and is not an admin
 - [ ] User functionalities
     - [ ] CRUD on parking spots
     - [ ] Track timestamps for reservation and View parking history
@@ -66,4 +71,4 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 - [ ] API Integration
 - [ ] Implement Stats page (ChartJS)
 - [ ] Try using `flask-wtf` for form validation and CSRF protection
-- [ ] Use flask blueprints
+- [x] Use flask blueprints

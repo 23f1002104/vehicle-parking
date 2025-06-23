@@ -27,8 +27,13 @@
                         <!-- <a class="nav-link active" aria-current="page" href="{{ url_for('main_bp.stats') }}">Stats</a> -->
                     </li>
                 </ul>
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+                <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('main_bp.search') }}">
+                    <!-- <label for="field" class="form-label me-2">Filter</label> -->
+                        <select id="field" name="field" class="form-select me-2 btn btn-sm" >
+                        <option value="parking_lot">Parking Lot</option>
+                        <option disabled>Kindly Login for <br>more search options</option>
+                        </select>
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query"/>
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
                 <li class="nav-item">

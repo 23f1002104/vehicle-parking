@@ -16,7 +16,7 @@ class User(db.Model, UserMixin):
     is_admin = db.Column(db.Boolean, default=False)
     is_flagged = db.Column(db.Boolean, default=False)
 
-    reservations = db.relationship('Reservation', backref='user', lazy=True)
+    reservations = db.relationship('Reservation', backref='user', lazy=True, order_by="Reservation.parking_timestamp")
 
 
 

@@ -19,8 +19,14 @@
                         <a class="nav-link disabled" aria-current="page" href="">Summary</a>
                     </li>
                 </ul>
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+                <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('main_bp.search') }}">
+                    <label for="field" class="form-label me-2">Filter</label>
+                        <select id="field" name="field" class="form-select me-2">
+                        <option value="">None</option>
+                        <option value="parking_lot">Parking Lot</option>
+                        <option value="reservation">Reservation</option>
+                        </select>
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query"/>
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
                 <li class="nav-item">
