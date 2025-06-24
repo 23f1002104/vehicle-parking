@@ -19,7 +19,7 @@
                         <a class="nav-link disabled" aria-current="page" href="">Summary</a>
                     </li>
                 </ul>
-                <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('main_bp.search') }}">
+                <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('user_bp.search', user_id=current_user.id) }}">
                     <label for="field" class="form-label me-2">Filter</label>
                         <select id="field" name="field" class="form-select me-2">
                         <option value="">None</option>
@@ -30,7 +30,7 @@
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
                 <li class="nav-item">
-                    <a class="btn btn-outline-primary" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
+                    <a class="btn btn-outline-danger" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
                 </li>
             </div>
         </div>
@@ -41,5 +41,14 @@
     <div class="container">
         <h1>Welcome {{ current_user.username }}</h1>
     </div>
-    
+
+    <div class="container">
+        {% if condition %}
+            
+        {% else %}
+            
+        {% endif %}
+    </div>
+
+
 {% endblock %}

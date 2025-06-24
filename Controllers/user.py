@@ -81,3 +81,58 @@ def edit_user_profile(user_id):
     else:
         flash("Permission Denied! Invalid User.", "danger")
         return redirect(url_for('auth_bp.login'))
+    
+
+@user_bp.route("/<string:user_id>/search", methods=['GET'])
+@user_required
+def search(user_id):
+    from rapidfuzz import fuzz, utils
+    query = request.args.get("query", "").strip()
+    field = request.args.get("field", "").strip() or "prime_location_name"  # Default search field
+
+    if not query:
+        return render_template("users/user_search.html", results=["No query passed"], query=query, field=field, user_id=user_id)
+
+    processed_query = utils.default_process(query)
+    threshold = 85 # needs to be adjusted for better results
+    results = []
+    
+    
+    # ParkingLot Search
+    if field in ("parking_lot", "prime_location_name"):
+        for lot in ParkingLot.query.all():
+            for col in lot.__table__.columns:
+                value = str(getattr(lot, col.name))
+                score = fuzz.WRatio(processed_query, value, processor=utils.default_process, score_cutoff=threshold)
+                print(value, score, col.name)
+                if score > threshold:
+                    results.append(lot)
+                    break # move to next item
+
+    # Reservation Search
+    elif field == "reservations":
+        # use eager load as reservation has foreign keys to user and parking_spot
+        for reservation in Reservation.query.options(
+            joinedload(Reservation.user),
+            joinedload(Reservation.spot)
+        ).all():
+            for col in reservation.__table__.columns:
+                value = str(getattr(reservation, col.name))
+                score = fuzz.WRatio(processed_query, value, processor=utils.default_process, score_cutoff=threshold)
+                print(value ,score, col.name)
+                if score > threshold:
+                    results.append(reservation)
+                    break # move to next item
+
+    else:
+        flash("Invalid search field", "secondary")
+
+    # Deduplicate by object ID
+    results_list = list({getattr(obj, 'id'): obj for obj in results}.values())
+    # final result
+    results = results_list if len(results_list) > 0 else ["Try using better query or field. Could not find a match"]
+    print(results, type(query), field) # Debugging
+    return render_template("users/user_search.html", results=results, query=query, field=field, user_id=user_id)
+    
+
+

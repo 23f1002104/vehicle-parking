@@ -1,10 +1,9 @@
 from uuid import uuid4
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 from shortuuid import uuid
 
-db = SQLAlchemy()
+from . import db
 
 # User model
 class User(db.Model, UserMixin):
@@ -45,7 +44,7 @@ class ParkingLot(db.Model):
         for spot in self.spots:
             for reservation in spot.reservations:
                 if reservation.leaving_timestamp:
-                    total_revenue += reservation.calculate_cost()
+                    total_revenue += reservation.reservation_cost()
 
         return total_revenue
 
@@ -55,7 +54,7 @@ class ParkingSpot(db.Model):
     lot_id = db.Column(db.String, db.ForeignKey('parking_lot.id'), nullable=False)
     status = db.Column(db.String(1), default='A')  # A: Available, O: Occupied
 
-    reservations = db.relationship('Reservation', backref='spot', lazy=True, order_by="Reservation.parking_timestamp")  # Order by parking_timestamp to get a chronological ordering
+    reservation = db.relationship('Reservation', backref='spot', lazy=True, order_by="Reservation.parking_timestamp")  # Order by parking_timestamp to get a chronological ordering
 
     __table_args__ = (
         db.PrimaryKeyConstraint('id', 'lot_id'), # ref: "https://www.reddit.com/r/flask/comments/g3tje5/composite_key_for_flasksqlalchemy/"
@@ -75,7 +74,7 @@ class Reservation(db.Model):
 
 
 
-    def calculate_cost(self):
+    def reservation_cost(self):
         lot_price = self.spot.lot.price_per_hour
         end_time = self.leaving_timestamp or datetime.now() # The time it leaves or the entire fare he booked the lot
         duration = (end_time - self.parking_timestamp).total_seconds() / 3600

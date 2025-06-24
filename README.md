@@ -13,6 +13,22 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 
 ## Instructions
 
+1. Clone the repository
+2. Create a virtual environment
+```bash
+python3 -m venv .venv
+```
+3. Install `requirements.txt` by
+```bash
+pip install -r requirements.txt
+```
+4. Create `.env` file to configure application
+5. Run the app by using
+```bash
+flask run
+```
+6. Once the database is created, create an Admin by running `create_admin.py`
+
 ---
 
 ## TODO:
@@ -30,8 +46,9 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 ---
 
 **Optional**
-- [ ] Create a folder `Api` for API related files(`api.py`,`resources.py`).
-- [ ] Create a folder `Forms` for `Flask-WTF` forms (if used).
+- [ ] ~Create a folder `Api` for API related files(`api.py`,`resources.py`).~
+- [x] Create a folder `Forms` for `Flask-WTF` forms (if used).
+    - [ ] Use `Flask-WTF` for backend validation
 
 ---
 
@@ -39,15 +56,12 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 - [x] Create navbars and alert messeges (flash messeges).
 - [x] Use [Modals](https://getbootstrap.com/docs/5.0/components/modal/) (BootStrap5) to book or check out parking spots. Also, may be used in Creating and deleting parking lots by admin.
 
----
-
-**Optional**
-- [ ] ~Carousels for about page~
 
 ---
 
 **Backend**
 - [x] Create Database as per given statement. 
+    - [x] Implemented `reservation_cost` method to calculate cost
 - [x] Implement authentication for users using `flask-login`
 - [x] Create admins and test
 - [x] Make `@admin_required` decorator to check user.is_admin
@@ -58,17 +72,19 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
     - [x] View parking spots details and delete a spot.
     - [x] Admin should see a list of all users and their details
     - [ ] ~Flag an user~
-    - [x] Create a field in the admin dashboard to search for a user, parking lot or reservation <!--TODO: improvement needed  -->
-- [x] User dashboard
-- [x] `user_requied` decorator to check if user is logged in and is not an admin
+    - [x] Create a field in the admin dashboard to search for a user, parking lot or reservation
+- [x] User dashboard (Partially created)
+- [x] `@user_requied` decorator to check if user is logged in and is not an admin
 - [ ] User functionalities
-    - [ ] CRUD on parking spots
+    - [ ] operation on parking spots
+    - [ ] CRUD on `Reservation` 
     - [ ] Track timestamps for reservation and View parking history
 
 ---
 
 **Optional**
-- [ ] API Integration
-- [ ] Implement Stats page (ChartJS)
-- [ ] Try using `flask-wtf` for form validation and CSRF protection
 - [x] Use flask blueprints
+- [x] Search functionality for Admins
+- [ ] ~API Integration~
+- [ ] Try using `flask-wtf` for form validation and CSRF protection (Ongoing)
+- [ ] Implement Stats page (ChartJS)

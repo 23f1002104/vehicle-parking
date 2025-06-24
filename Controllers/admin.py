@@ -86,6 +86,7 @@ def edit_admin_profile(admin_id):
         return redirect(url_for('auth_bp.login'))
 
 
+
 @admin_bp.route("/<string:admin_id>/search", methods=['GET'])
 @admin_required
 def search(admin_id):
@@ -94,52 +95,64 @@ def search(admin_id):
     field = request.args.get("field", "").strip() or "prime_location_name"  # Default search field
 
     if not query:
-        return render_template("admin/admin_search.html", results=[], query=query, field=field, admin_id=admin_id)
+        return render_template("admin/admin_search.html", results=["No query passed"], query=query, field=field, admin_id=admin_id)
 
     processed_query = utils.default_process(query)
     threshold = 80 # needs to be adjusted for better results
     results = []
-
+    
+    
     # ParkingLot Search
     if field in ("parking_lot", "prime_location_name"):
         for lot in ParkingLot.query.all():
-            combined = " ".join(filter(None, [lot.prime_location_name, lot.address, lot.pin_code]))
-            score = fuzz.WRatio(processed_query, combined, processor=utils.default_process, score_cutoff=threshold)
-            # print(score)
-            if score > threshold:
-                results.append(lot)
-            else:
-                pass # print(f"Try using better query. Could not find better match")
+            for col in lot.__table__.columns:
+                score = fuzz.WRatio(
+                    processed_query, 
+                    str(getattr(lot, col.name)), 
+                    processor=utils.default_process, 
+                    score_cutoff=threshold
+                )
+                # print(score)
+                if score > threshold:
+                    results.append(lot)
+                    break # move to next item
         
 
     # User Search
     elif field == "user":
         for user in User.query.filter_by(is_admin=False).all():
-            combined = " ".join(filter(None, [user.full_name, user.username, user.email]))
-            score = fuzz.WRatio(processed_query, combined, processor=utils.default_process, score_cutoff=threshold)
-            # print(score)
-            if score > threshold:
-                results.append(user)
-            else:
-                pass # print(f"Try using better query. Could not find better match")
+            for col in user.__table__.columns:
+                score = fuzz.WRatio(
+                    processed_query, 
+                    str(getattr(user, col.name)), 
+                    processor=utils.default_process, 
+                    score_cutoff=threshold
+                )
+                # print(score)
+                if score > threshold:
+                    results.append(user)
+                    break # move to next item
 
     # Reservation Search
     elif field == "reservations":
-        # use eager load as reservation has foreign keys to user and parking_lot
-        for reservation in Reservation.query.options(joinedload(Reservation.user), joinedload(Reservation.parking_lot)).all():
-            lot = reservation.parking_lot
-            if lot:
-                combined = " ".join(filter(None, [lot.prime_location_name, lot.address, lot.pin_code]))
-                score = fuzz.WRatio(processed_query, combined, processor=utils.default_process, score_cutoff=threshold)
+        # use eager load as reservation has foreign keys to user and parking_spot
+        for reservation in Reservation.query.options(joinedload(Reservation.user), joinedload(Reservation.parking_spot)).all():
+            for col in reservation.__table__.columns:
+                score = fuzz.WRatio(
+                    processed_query, 
+                    str(getattr(reservation, col.name)), 
+                    processor=utils.default_process, 
+                    score_cutoff=threshold
+                )
                 # print(score)
                 if score > threshold:
                     results.append(reservation)
-                else:
-                    pass # print(f"Try using better query. Could not find better match")
+                    break # move to next item
 
     # Deduplicate by object ID
-    results_list = list({getattr(obj, 'id', id(obj)): obj for obj in results}.values())
-    results = results_list if len(results_list) > 0 else ["Try using better query or field. Could not find better match"]
+    results_list = list({getattr(obj, 'id'): obj for obj in results}.values())
+    # final result
+    results = results_list if len(results_list) > 0 else ["Try using better query or field. Could not find a match"]
     print(results, type(query), field) # Debugging
     return render_template("admin/admin_search.html", results=results, query=query, field=field, admin_id=admin_id)
 

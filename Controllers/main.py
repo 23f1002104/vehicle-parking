@@ -1,4 +1,3 @@
-from ast import main
 from flask import render_template
 from . import main_bp
 
@@ -36,25 +35,28 @@ def search():
     query = request.args.get("query", "").strip()
 
     if not query:
-        return render_template("admin/admin_search.html", results=["No query passed. Try passing some query"], query=query)
-    
+        return render_template("main/search.html", results=["No query passed. Try passing some query"], query=query)
+
     processed_query = utils.default_process(query)
     threshold = 80 # needs to be adjusted for better results
     results = []
 
-    # ParkingLot Search
-    
+    # ParkingLot Search. Check for each field separately otherwise skips some relevant results
     for lot in ParkingLot.query.all():
-        combined = " ".join(filter(None, [lot.prime_location_name, lot.address, lot.pin_code]))
-        score = fuzz.WRatio(processed_query, combined, processor=utils.default_process, score_cutoff=threshold)
-        # print(score)
-        if score > threshold:
-            results.append(lot)
-        else:
-            pass # print(f"Try using better query. Could not find better match")
+        for col in lot.__table__.columns:
+            score = fuzz.WRatio(
+                processed_query, 
+                str(getattr(lot, col.name)), 
+                processor=utils.default_process, 
+                score_cutoff=threshold
+            )
+            if score >= threshold:
+                results.append(lot)
+                break  # Found a match in one field; move to next lot
 
-    # Deduplicate by object ID
-    results_list = list({getattr(obj, 'id', id(obj)): obj for obj in results}.values())
+    # Deduplicate the results based on the id 
+    results_list = list({getattr(obj, 'id'): obj for obj in results}.values())
+    # final result
     results = results_list if len(results_list) > 0 else ["Try using better query or field. Could not find better match"]
     # print(results, type(query)) # Debugging
 
