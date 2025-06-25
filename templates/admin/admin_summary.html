@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+    
+{% endblock %}
+
+{% block contents %}
+    <h1 class="text-center">Summary</h1>
+
+<div class="card shadow-sm my-4">
+    <div class="card-body">
+        <h5 class="card-title">Revenue Distribution</h5>
+        <canvas id="myChart"></canvas>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+{% endblock %}

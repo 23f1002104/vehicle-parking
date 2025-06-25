@@ -16,13 +16,15 @@
                         <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.edit_user_profile', user_id=current_user.id) }}">Edit Profile</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.view_parking_lots', user_id=current_user.id) }}">Parking Lots</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link disabled" aria-current="page" href="">Summary</a>
                     </li>
                 </ul>
                 <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('user_bp.search', user_id=current_user.id) }}">
                     <label for="field" class="form-label me-2">Filter</label>
                         <select id="field" name="field" class="form-select me-2">
-                        <option value="">None</option>
                         <option value="parking_lot">Parking Lot</option>
                         <option value="reservation">Reservation</option>
                         </select>
@@ -43,11 +45,53 @@
     </div>
 
     <div class="container">
-        {% if condition %}
-            
-        {% else %}
-            
-        {% endif %}
+        <div class="contents" id="parking-lots">
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                        <th scope="col">Reservation Id</th>
+                        <th scope="col">Reserved Spot Id</th>
+                        <th scope="col">Reservation Address</th>
+                        <th scope="col">Parking Timestamp</th>
+                        <th scope="col">Leaving Timestamp</th>
+                        <th scope="col">Duration</th>
+                        <th scope="col">Total Fare</th>
+                        <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in reservations %}
+                        <tr>
+                            <td>{{ res.id }}</td>
+                            <td>{{ res.spot_id }}</td>
+                            <td>{{ res.lot.id }} <br> {{ res.lot.prime_location_name }} <br> {{ res.lot.pin_code }}</td>
+                            <td>{{ res.parking_timestamp.strftime('%d-%m-%Y') }} <br> {{ res.parking_timestamp.strftime('%H:%M') }} </td>
+                            {% if res.leaving_timestamp %}
+                                <td>{{ res.leaving_timestamp.strftime('%d-%m-%Y') }} <br> {{ res.leaving_timestamp.strftime('%H:%M') }} </td>
+                            {% else %}
+                                <td>Ongoing...</td>
+                            {% endif %}
+                            
+                            <td>{{ res.duration() }} Minutes</td>
+                            <td>
+                                <p class="text-success">{{ res.reservation_cost() }}</p>
+                            </td>
+                            <td>
+                                {% if res.status=="R" %}
+                                    <a href="{{ url_for('user_bp.release_spot', user_id=current_user.id, lot_id=res.lot_id, res_id=res.id) }}" class="btn btn-secondary">
+                                        Finish Reservation
+                                    </a>
+                                {% else %}
+                                    <p class="text-muted">Reservation Finished</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
 

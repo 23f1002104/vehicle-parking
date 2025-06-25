@@ -2,5 +2,6 @@ requests
 flask
 flask-login
 flask-sqlalchemy
+flask-migrate
 python-dotenv
 rapidfuzz # for search functionality

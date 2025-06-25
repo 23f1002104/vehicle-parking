@@ -17,7 +17,7 @@
                     </li>
                     <li class="nav-item">
                         <!-- ! make the link active when `summary` is created -->
-                        <a class="nav-link disabled" aria-current="page" href="">Summary</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.admin_summary', admin_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
                 <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('admin_bp.search', admin_id=current_user.id) }}">

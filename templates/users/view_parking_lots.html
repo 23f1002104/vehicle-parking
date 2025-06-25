@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+
+{% block navbar %}
+    
+{% endblock %}
+
+{% block contents %}
+    <div class="container mt-5">
+        <h1>Available lots</h1>
+    </div>
+
+    <div class="container mb-5">
+        <div class="contents" id="parking-lots">
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Prime Location Name</th>
+                        <th scope="col">Lot Id</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Available Spots</th>
+                        <th scope="col">Cost per hour</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lot in lots %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ lot.prime_location_name }}</td>
+                            <td><a href="{{ url_for('user_bp.reserve_spot', user_id=current_user.id, lot_id=lot.id) }}">{{ lot.id }}</a></td>
+                            <td>{{ lot.prime_location_name }} <br> {{ lot.address }} <br> {{ lot.pin_code }}</td>
+                            <td>
+                                <p class="text-success fw-bold">{{ lot.total_available() }}</p>
+                            </td>
+                            <td>{{ lot.price_per_hour }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

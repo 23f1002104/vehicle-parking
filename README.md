@@ -3,17 +3,20 @@
 ---
 
 ## Models
-We define our models in `./Models/models.py` as per the given descriptions in **Project Statement**. For need of furthur changes in our SQLite database we may use flask_migrate.
+We define our models in `./Models/models.py` as per the given descriptions in **Project Statement**. For need of furthur changes in our SQLite database we **may** use `flask_migrate`.
 
 
 ## Controllers
-All the app routes are added here,`./Controllers/routes.py` including authentications. The authentications are handeled by `flask-login` and in future a new decorator `@admin_required` will be defined that will allow some functionalities to be Admin only.
+All the app routes are added here,`./Controllers/routes.py` including authentications. The authentications are handeled by `flask-login`. A new decorator `@admin_required` is defined that will allow some functionalities to be Admin only. Similarly `@user_required` is defined to allow some funtionalities to be user only, admins are not allowed.
 
 ---
 
 ## Instructions
 
 1. Clone the repository
+```bash
+gh repo clone AbhrojyotiGhosh/vehicle-parking
+```
 2. Create a virtual environment
 ```bash
 python3 -m venv .venv

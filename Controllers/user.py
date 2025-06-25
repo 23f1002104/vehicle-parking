@@ -1,6 +1,7 @@
-from flask import render_template, request, redirect, url_for, flash
+from os import abort
+from flask import render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 from sqlalchemy.orm import joinedload  # To eager load from database
 from app import db
 from Models.models import User, ParkingLot, ParkingSpot, Reservation
@@ -13,9 +14,15 @@ def user_required(f):
     @wraps(f)
     @login_required # available via flask_login directly
     def func(*args, **kwargs):
+        
         if current_user.is_admin:
             flash("User required! Access denied.", 'danger')
-            return redirect(url_for('auth_bp.login'))
+            return redirect(url_for('auth_bp.login')) # abort(403)
+        
+        if kwargs.get("user_id") != current_user.id:
+            flash("Unauthorized access", 'danger')
+            return redirect(url_for('auth_bp.login')) # abort(403)   
+        
         return f(*args, **kwargs)
     return func
 
@@ -25,10 +32,15 @@ def user_required(f):
 @user_bp.route("/<string:user_id>/dashboard")
 @user_required
 def user_dashboard(user_id):
-    if current_user.is_admin or current_user.id != user_id:
-        flash("You are an Admin.\nRequest Denied.", 'danger')
-        return redirect(url_for('auth_bp.login'))
-    return render_template("users/user_dashboard.html")
+    user = User.query.filter_by(id=user_id, is_admin=False).first_or_404()
+    reservations = Reservation.query.filter_by(user_id=user_id).order_by(
+        Reservation.status == 'F',
+        Reservation.parking_timestamp.desc()
+    ).all()
+    # print(reservations)
+    return render_template("users/user_dashboard.html", reservations=reservations)
+
+
 
 @user_bp.route("/<string:user_id>/editprofile", methods=['GET','POST'])
 @user_required
@@ -81,7 +93,14 @@ def edit_user_profile(user_id):
     else:
         flash("Permission Denied! Invalid User.", "danger")
         return redirect(url_for('auth_bp.login'))
-    
+
+
+#TODO: Add user summary
+@user_bp.route("/<string:user_id>/summary", methods=['GET'])
+@user_required
+def user_summary(user_id):
+    user = User.query.filter_by(id=user_id).first_or_404()
+    return render_template("users/user_summary.html", user=user)
 
 @user_bp.route("/<string:user_id>/search", methods=['GET'])
 @user_required
@@ -97,7 +116,9 @@ def search(user_id):
     threshold = 85 # needs to be adjusted for better results
     results = []
     
-    
+    if fuzz.WRatio(query.lower(), "available", processor=utils.default_process, score_cutoff=90) > 90:
+        results = [spot for spot in ParkingSpot.query.filter_by(staus="A").all()]
+
     # ParkingLot Search
     if field in ("parking_lot", "prime_location_name"):
         for lot in ParkingLot.query.all():
@@ -135,4 +156,79 @@ def search(user_id):
     return render_template("users/user_search.html", results=results, query=query, field=field, user_id=user_id)
     
 
+@user_bp.route("/<string:user_id>/viewlots", methods=['GET'])
+@user_required
+def view_parking_lots(user_id):
+    lots = [lot for lot in ParkingLot.query.all() if lot.total_available() > 0]
+    return render_template("users/view_parking_lots.html", lots=lots)
 
+
+
+
+@user_bp.route("/<string:user_id>/<string:lot_id>/reservespot", methods=['GET','POST'])
+@user_required
+def reserve_spot(user_id,lot_id):
+    if current_user.id == user_id:
+        lot = ParkingLot.query.filter_by(id=lot_id).first_or_404() # return 404 error if not found
+        spot = ParkingSpot.query.filter_by(lot_id=lot_id, status="A").first_or_404() # checks if any spot is available in that lot
+        
+        if request.method == 'POST':
+            res_username = request.form.get("username")
+            res_user_id = User.query.filter_by(username=res_username).first().id
+            res_lot_id = request.form.get("lot_id")
+            res_spot_id = spot.id
+            res_car_id = request.form.get("car_id").strip()
+            try:
+                new_reservation = Reservation(
+                    lot_id = res_lot_id,
+                    spot_id = res_spot_id,
+                    user_id = res_user_id,
+                    car_id = res_car_id
+                )
+                db.session.add(new_reservation)
+                spot.status = "O"
+                db.session.commit()
+                flash("Reservation Successful!", "success")
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Reservation failed!\nError:{e}", "danger")
+            
+            finally:
+                return redirect(url_for("user_bp.user_dashboard", user_id=current_user.id))
+            
+        print(lot, spot.status)
+        return render_template('users/reserve_spot.html', lot=lot, spot=spot)
+    
+    else:
+        abort(403)
+
+@user_bp.route("/<string:user_id>/<string:lot_id>/clearspot/<string:res_id>", methods=['GET','POST'])
+@user_required
+def release_spot(user_id, lot_id, res_id):
+    reservation = Reservation.query.filter_by(id=res_id, user_id=user_id, lot_id=lot_id).order_by(Reservation.parking_timestamp.desc()).first_or_404()
+    if request.method == "POST":
+        if reservation.status == "R": # Ongoing reservation
+            if current_user.id == user_id:
+                try:
+                    from datetime import datetime
+                    reservation.leaving_timestamp = datetime.now()
+                    db.session.flush()
+                    total_fare = reservation.reservation_cost()
+                    flash(f"Spot released! Fare: {total_fare}", "success")
+                    reservation.status = "F"
+                    reservation.spot.status = "A"
+                    db.session.commit()
+                except Exception as e:
+                    db.session.rollback()
+                    print(str(e))
+                    flash(f"Spot release failed!\nError:{e}", "danger")
+                finally:
+                    return redirect(url_for("user_bp.user_dashboard", user_id=current_user.id))
+            else:
+                abort(403)
+        else:
+            flash("No ongoing reservation found", "secondary")
+            return redirect(url_for("user_bp.user_dashboard", user_id=current_user.id))
+
+    return render_template("users/release_spot.html", reservation=reservation)

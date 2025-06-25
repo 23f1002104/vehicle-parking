@@ -16,6 +16,10 @@ def admin_required(f):
         if not current_user.is_admin:
             flash("Admin permission required! Access denied.", 'danger')
             return redirect(url_for('auth_bp.login'))
+        if kwargs.get("admin_id") != current_user.id:
+            flash("Unauthorized access", 'danger')
+            return redirect(url_for('auth_bp.login'))
+
         return f(*args, **kwargs)
     return func
 
@@ -157,22 +161,11 @@ def search(admin_id):
     return render_template("admin/admin_search.html", results=results, query=query, field=field, admin_id=admin_id)
 
 
-
+#TODO: Create a summary page
 @admin_bp.route("/<string:admin_id>/summary", methods=['GET', 'POST'])
-def summary(admin_id):
-    if not current_user.is_admin or current_user.id != admin_id:
-        flash("Admin permission required! Access denied.", 'danger')
-        return redirect(url_for('auth_bp.login'))
-    
-    # Fetch all parking lots and their details
-    parking_lots = ParkingLot.query.options(
-        joinedload(ParkingLot.spots).joinedload(ParkingSpot.reservations)
-    ).all()
-    
-    # Calculate total revenue and other statistics
-    total_revenue = sum(spot.get_total_revenue() for lot in parking_lots for spot in lot.spots if spot.status == 'O')
-    
-    return render_template("admin/summary.html", parking_lots=parking_lots, total_revenue=total_revenue)
+def admin_summary(admin_id):
+    admin = User.query.filter_by(id=admin_id).first_or_404()
+    return render_template("admin/admin_summary.html")
 
 
 

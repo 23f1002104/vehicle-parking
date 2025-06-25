@@ -1,15 +1,17 @@
 from flask import Flask
+from flask_migrate import Migrate
 from flask_login import LoginManager
 from config import Config
 from Models import db
 
 
+migrate = Migrate()
+
 app = Flask(__name__)
 app.config.from_object(Config)
 
-
 db.init_app(app)
-
+migrate.init_app(app,db)
 
 # configure flask login
 login_manager = LoginManager()
