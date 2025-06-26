@@ -96,7 +96,7 @@ class Reservation(db.Model):
     status = db.Column(db.String(1), default='R') # {"R":"Reserved", "F":"Finished"} 
 
     lot_id = db.Column(db.String(22), db.ForeignKey('parking_lot.id'), nullable=False)
-    spot_id = db.Column(db.Integer, nullable=False)
+    spot_id = db.Column(db.Integer)
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
 
     car_id = db.Column(db.String(10), unique=True, nullable=False)
@@ -112,17 +112,20 @@ class Reservation(db.Model):
         ),
     )
 
-    def duration(self):
+    def duration(self, arg=False):
         end_time = self.leaving_timestamp or datetime.now()
-        duration = (end_time - self.parking_timestamp).total_seconds() / 60 # duration in minutes
-        return round(duration, 2)
+        duration = (end_time - self.parking_timestamp).total_seconds()
+        hrs, rem = divmod(duration, 3600)
+        min, sec = divmod(rem, 60)
+        sec = int(sec)
+        time = "{:02}h {:02}m {:02}s".format(hrs, min, sec)
+        return duration if arg else time
 
 
     def reservation_cost(self):
         lot_price = self.lot.price_per_hour
-        # duration = self.duration() / 60 # duration in hours 
         end_time = self.leaving_timestamp or datetime.now() # The time it leaves or the entire fare he booked the lot
         duration = (end_time - self.parking_timestamp).total_seconds() / 3600 # duration in hours
-        return round(duration * lot_price, 2)
+        return round(duration * lot_price, 0)
     
     

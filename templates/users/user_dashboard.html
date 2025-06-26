@@ -19,7 +19,7 @@
                         <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.view_parking_lots', user_id=current_user.id) }}">Parking Lots</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link disabled" aria-current="page" href="">Summary</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.user_summary', user_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
                 <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('user_bp.search', user_id=current_user.id) }}">
@@ -73,7 +73,7 @@
                                 <td>Ongoing...</td>
                             {% endif %}
                             
-                            <td>{{ res.duration() }} Minutes</td>
+                            <td>{{ res.duration() }}</td>
                             <td>
                                 <p class="text-success">{{ res.reservation_cost() }}</p>
                             </td>

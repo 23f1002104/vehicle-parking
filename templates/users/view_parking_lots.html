@@ -2,7 +2,35 @@
 
 
 {% block navbar %}
-    
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">V-Park</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.user_dashboard', user_id=current_user.id) }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.edit_user_profile', user_id=current_user.id) }}">Edit Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.user_summary', user_id=current_user.id) }}">Summary</a>
+                    </li>
+                </ul>
+                <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('user_bp.search', user_id=current_user.id) }}">
+                    <label for="field" class="form-label me-2">Filter</label>
+                        <select id="field" name="field" class="form-select me-2">
+                        <option value="parking_lot">Parking Lot</option>
+                        </select>
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query"/>
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
 {% endblock %}
 
 {% block contents %}
@@ -21,6 +49,7 @@
                         <th scope="col">Lot Id</th>
                         <th scope="col">Address</th>
                         <th scope="col">Available Spots</th>
+                        <th scope="col">Action</th>
                         <th scope="col">Cost per hour</th>
                         </tr>
                     </thead>
@@ -29,10 +58,17 @@
                         <tr>
                             <td>{{ loop.index }}</td>
                             <td>{{ lot.prime_location_name }}</td>
-                            <td><a href="{{ url_for('user_bp.reserve_spot', user_id=current_user.id, lot_id=lot.id) }}">{{ lot.id }}</a></td>
+                            <td>{{ lot.id }}</a></td>
                             <td>{{ lot.prime_location_name }} <br> {{ lot.address }} <br> {{ lot.pin_code }}</td>
                             <td>
                                 <p class="text-success fw-bold">{{ lot.total_available() }}</p>
+                            </td>
+                            <td>
+                                {% if lot.total_available() > 0 %}
+                                    <a href="{{ url_for('user_bp.reserve_spot', user_id=current_user.id, lot_id=lot.id) }}" type="button" class="btn btn-primary">Book a spot</a>
+                                {% else %}
+                                    <p class="text-muted">Regret! No spot left.</p>
+                                {% endif %}
                             </td>
                             <td>{{ lot.price_per_hour }}</td>
                         </tr>

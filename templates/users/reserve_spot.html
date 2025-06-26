@@ -47,6 +47,7 @@
             <br>
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">Reserve</button>
+                <a href="{{ url_for('user_bp.user_dashboard', user_id=current_user.id) }}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>

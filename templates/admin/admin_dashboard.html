@@ -59,6 +59,7 @@
                     <th scope="col">Address</th>
                     <th scope="col">Available Spots</th>
                     <th scope="col">Cost per hour</th>
+                    <th scope="col">Go to</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,10 +67,11 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>{{ lot.prime_location_name }}</td>
-                        <td><a href="{{ url_for('admin_bp.view_parking_lot', admin_id=current_user.id, lot_id=lot.id) }}">{{ lot.id }}</a></td>
+                        <td>{{ lot.id }}</td>
                         <td>{{ lot.prime_location_name }} <br> {{ lot.address }} <br> {{ lot.pin_code }}</td>
                         <td>{{ lot.total_available() }}</td>
                         <td>{{ lot.price_per_hour }}</td>
+                        <td><a href="{{ url_for('admin_bp.view_parking_lot', admin_id=current_user.id, lot_id=lot.id) }}" class="btn btn-primary">View Lot</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

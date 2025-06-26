@@ -42,7 +42,10 @@ def register():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        pass
+        if current_user.is_admin:
+            return redirect(url_for("admin_bp.admin_dashboard", admin_id = current_user.id))
+        else:
+            return redirect(url_for("user_bp.user_dashboard", user_id = current_user.id))
     if request.method == "POST":
         username = request.form.get("username").strip()
         password = request.form.get("password")

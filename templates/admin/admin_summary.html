@@ -1,23 +1,119 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-    
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">V-Park</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.admin_dashboard', admin_id=current_user.id) }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.user_list', admin_id=current_user.id) }}">Users</a>
+                    </li>
+                </ul>
+                <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('admin_bp.search', admin_id=current_user.id) }}">
+                    <label for="field" class="form-label me-2">Filter</label>
+                        <select id="field" name="field" class="form-select me-2">
+                        <option value="parking_lot">Parking Lot</option>
+                        <option value="reservation">Reservation</option>
+                        </select>
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query"/>
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="btn btn-outline-danger" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 {% endblock %}
 
 {% block contents %}
-    <h1 class="text-center">Summary</h1>
-
-<div class="card shadow-sm my-4">
-    <div class="card-body">
-        <h5 class="card-title">Revenue Distribution</h5>
-        <canvas id="myChart"></canvas>
+    <div class="container">
+        <div class="contents" id="reservation-summary">
+            <h1>Reservations Summary</h1>
+            <div class="table-responsive scrollabel-table">
+                <table class="table table-striped align-middle table-bordered">
+                    <thead>
+                        <tr>
+                        <th scope="col">Reservation Id</th>
+                        <th scope="col">User</th>
+                        <th scope="col">Reserved Spot Id</th>
+                        <th scope="col">Lot Id</th>
+                        <th scope="col">Reservation Address</th>
+                        <th scope="col">Parking Timestamp</th>
+                        <th scope="col">Leaving Timestamp</th>
+                        <th scope="col">Duration</th>
+                        <th scope="col">Total Fare</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in reservation_summary %}
+                        <tr>
+                            <td>{{ res.id }}</td>
+                            <td>{{ res.user.username }}</td>
+                            <td>{{ res.spot_id }}</td>
+                            <td>{{ res.lot.id }}</td>
+                            <td>{{ res.lot.address }} <br> {{ res.lot.prime_location_name }} <br> {{ res.lot.pin_code }}</td>
+                            <td>{{ res.parking_timestamp.strftime('%d-%m-%Y') }} <br> {{ res.parking_timestamp.strftime('%H:%M') }} </td>
+                            {% if res.leaving_timestamp %}
+                                <td>{{ res.leaving_timestamp.strftime('%d-%m-%Y') }} <br> {{ res.leaving_timestamp.strftime('%H:%M') }} </td>
+                            {% else %}
+                                <td>Ongoing...</td>
+                            {% endif %}
+                            
+                            <td>{{ res.duration() }}</td>
+                            <td>
+                                <p class="text-success">{{ res.reservation_cost() }}</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 
+    <div class="container">
+        <div class="contents" id="parking-lots-summary">
+            <h1>Parking Lot Summary</h1>
+            <div class="table-responsive scrollable-table">
+                <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Lot Location</th>
+                        <th>Lot ID</th>
+                        <th>Total Reservations</th>
+                        <th>Total Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lot in lots_summary %}
+                    <tr>
+                        <td>{{ lot.prime_location_name }}</td>
+                        <td>{{ lot.id }}</td>
+                        <td>{{ lot.uses | length }}</td>
+                        <td>{{ lot.total_revenue() }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .scrollable-table {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+</style>
 
-
-{% endblock %}

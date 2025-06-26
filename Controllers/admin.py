@@ -164,8 +164,12 @@ def search(admin_id):
 #TODO: Create a summary page
 @admin_bp.route("/<string:admin_id>/summary", methods=['GET', 'POST'])
 def admin_summary(admin_id):
-    admin = User.query.filter_by(id=admin_id).first_or_404()
-    return render_template("admin/admin_summary.html")
+    admin = User.query.filter_by(id=admin_id, is_admin=True).first_or_404() # Check whether the admin exists
+    if current_user.id == admin_id:
+        lots_summary = ParkingLot.query.all()
+        reservation_summary = Reservation.query.all()
+        # print(reservation_summary)
+        return render_template("admin/admin_summary.html", lots_summary=lots_summary, reservation_summary=reservation_summary)
 
 
 
@@ -319,6 +323,8 @@ def delete_parking_lot(admin_id, lot_id):
     # If all spots are available, delete the parking lot and its spots
     if all(spot.status == 'A' for spot in parking_lot.spots):
         try:
+            for spot in parking_lot.spots:
+                db.session.delete(spot)
             db.session.delete(parking_lot)
             db.session.commit()
             flash("Parking lot and its spots deleted successfully.", "success")

@@ -7,6 +7,38 @@ from app import db
 from Models.models import User, ParkingLot, ParkingSpot, Reservation
 from . import user_bp
 
+
+
+from collections import defaultdict # easier to work with
+
+def get_lot_summary(user_id):
+    # Get all finished reservations for the user
+    reservations = Reservation.query.filter_by(user_id=user_id).filter(Reservation.status == 'F').all()
+
+    # lot_id → { 'lot': lot_obj, 'total_cost': X, 'total_duration': Y }
+    lot_summary = defaultdict(lambda: {'lot': None, 'total_cost': 0.0, 'total_duration': 0.0})
+
+    for res in reservations:
+        lot_id = res.lot_id
+        cost = res.reservation_cost()
+        duration_seconds = res.duration(arg=True)  # total seconds
+
+        lot_summary[lot_id]['lot'] = res.lot
+        lot_summary[lot_id]['total_cost'] += cost
+        lot_summary[lot_id]['total_duration'] += duration_seconds
+
+    # Optional: format duration to hh:mm:ss
+    for data in lot_summary.values():
+        total_seconds = int(data['total_duration'])
+        hrs, rem = divmod(total_seconds, 3600)
+        mins, secs = divmod(rem, 60)
+        data['formatted_duration'] = f"{hrs:02}h {mins:02}m {secs:02}s"
+
+    return lot_summary
+
+
+
+
 from functools import wraps
 # user_required decorator to ensure that the user is logged in and is not an admin
 # ref: "https://github.com/sayan01/bootcamp-july/blob/master/routes.py"
@@ -36,7 +68,7 @@ def user_dashboard(user_id):
     reservations = Reservation.query.filter_by(user_id=user_id).order_by(
         Reservation.status == 'F',
         Reservation.parking_timestamp.desc()
-    ).all()
+    ).limit(5).all()
     # print(reservations)
     return render_template("users/user_dashboard.html", reservations=reservations)
 
@@ -100,7 +132,15 @@ def edit_user_profile(user_id):
 @user_required
 def user_summary(user_id):
     user = User.query.filter_by(id=user_id).first_or_404()
-    return render_template("users/user_summary.html", user=user)
+    reservations = Reservation.query.filter_by(user_id=user_id).order_by(
+        Reservation.status == 'F',
+        Reservation.parking_timestamp.desc()
+    ).all()
+
+    lot_summary = get_lot_summary(user_id)
+
+    return render_template("users/user_summary.html", user=user, reservations=reservations, lot_summary=lot_summary)
+
 
 @user_bp.route("/<string:user_id>/search", methods=['GET'])
 @user_required
@@ -159,7 +199,7 @@ def search(user_id):
 @user_bp.route("/<string:user_id>/viewlots", methods=['GET'])
 @user_required
 def view_parking_lots(user_id):
-    lots = [lot for lot in ParkingLot.query.all() if lot.total_available() > 0]
+    lots = ParkingLot.query.all()
     return render_template("users/view_parking_lots.html", lots=lots)
 
 
