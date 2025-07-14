@@ -21,8 +21,14 @@
                         <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.admin_summary', admin_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+                <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('admin_bp.search', admin_id=current_user.id) }}">
+                    <label for="field" class="form-label me-2">Filter</label>
+                        <select id="field" name="field" class="form-select me-2">
+                        <option value="parking_lot">Parking Lot</option>
+                        <option value="reservation">Reservation</option>
+                        <option value="user">User</option>
+                        </select>
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query"/>
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
             </div>
@@ -34,8 +40,8 @@
 {% block contents %}
     <div class="container my-4 text-center border rounded p-3">
         <h4>Parking Spot#{{ parking_spot.id }}</h4>
-        <p class="text-success fw-semibold my-2">Status: {{ parking_spot.status }}</p>
         {% if parking_spot.is_available() %}
+            <p class="text-success fw-semibold my-2">Status: {{ parking_spot.status }}</p>
             <p class="text-success">This parking spot is available.</p>
             <div class="container">
                 <h4>Last Used:</h4>
@@ -44,7 +50,7 @@
                     <p class="text-secondary">Reserved at: {{ parking_spot.reservations[-1].parking_timestamp }}</p>
                     {% if parking_spot.reservations[-1].leaving_timestamp %}
                         <p class="text-secondary">Leaving at: {{ parking_spot.reservations[-1].leaving_timestamp }}</p>
-                        <p class="text-secondary">Cost: ₹{{ parking_spot.reservations[-1].calculate_cost() }}</p>
+                        <p class="text-secondary">Cost: ₹{{ parking_spot.reservations[-1].reservation_cost() }}</p>
                     {% else %}
                         <p class="text-secondary">Leaving time not set yet.</p>
                     {% endif %}
@@ -53,13 +59,14 @@
                 {% endif %}
             </div>
         {% else %}
-            <p class="text-danger">This parking spot is occupied by {{ parking_spot.reservations[-1].user.full_name }}</p>
+        <p class="text-danger fw-semibold my-2">Status: {{ parking_spot.status }}</p>
+            <p class="text-danger">This parking spot is occupied by: {{ parking_spot.reservations[-1].user_id }}</p>
             <br>
             <p class="text-secondary">Car ID: {{ parking_spot.reservations[-1].car_id }}</p>
             <p class="text-secondary">Reserved at: {{ parking_spot.reservations[-1].parking_timestamp }}</p>
             {% if parking_spot.reservations[-1].leaving_timestamp %}
                 <p class="text-secondary">Leaving at: {{ parking_spot.reservations[-1].leaving_timestamp }}</p>
-                <p class="text-secondary">Cost: INR {{ parking_spot.reservations[-1].calculate_cost() }}</p>
+                <p class="text-secondary">Cost: INR {{ parking_spot.reservations[-1].reservation_cost() }}</p>
             {% else %}
                 <p class="text-secondary">Leaving time not set yet.</p>
             {% endif %}
@@ -67,11 +74,17 @@
         <p class="text-secondary">Lot ID: {{ parking_spot.lot_id }}</p>
         <hr>
         {% if parking_spot.is_available() %}
-            <form action="{{ url_for('admin_bp.delete_parking_spot', admin_id=current_user.id, lot_id=parking_spot.lot_id, spot_id=parking_spot.id) }}" method="POST">
-                <button type="submit" class="btn btn-danger">Delete</button>
-            </form>
+            <div class="d-flex gap-2 justify-content-center">
+                <form action="{{ url_for('admin_bp.delete_parking_spot', admin_id=current_user.id, lot_id=parking_spot.lot_id, spot_id=parking_spot.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+                <a href="{{ url_for('admin_bp.view_parking_lot', admin_id=current_user.id, lot_id=parking_spot.lot_id) }}" class="btn btn-secondary">Back</a>
+            </div>
         {% else %}
             <p class="text-muted">Parking spot in use. Can not be deleted.</p>
+            <a href="{{ url_for('admin_bp.view_parking_lot', admin_id=current_user.id, lot_id=parking_spot.lot_id) }}" class="btn btn-secondary">Back</a>
         {% endif %}
+        
+        
     </div>
 {% endblock %}

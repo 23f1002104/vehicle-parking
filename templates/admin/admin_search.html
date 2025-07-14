@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+
+{% block navbar %}
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">V-Park</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.admin_dashboard', admin_id=current_user.id) }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <!-- ! make the link active when `summary` is created -->
+                        <a class="nav-link disabled" aria-current="page" href="">Summary</a>
+                    </li>
+                </ul>
+                <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('admin_bp.search', admin_id=current_user.id) }}">
+                    <label for="field" class="form-label me-2">Field</label>
+                        <select id="field" name="field" class="form-select me-2">
+                        <option value="parking_lot">Parking Lot</option>
+                        <option value="reservation">Reservation</option>
+                        <option value="user">User</option>
+                    </select>
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query"/>
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin_bp.edit_admin_profile', admin_id=current_user.id) }}" type="btn btn-outline-primary">Edit Account Info</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-danger" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endblock %}
+
+
+
+{% block contents %}
+<div class="container my-4">
+    <h1 class="mb-4">Search Results for: <em>{{ query }}</em></h1>
+
+    {% if results %}
+        <ul class="list-group">
+            {% for result in results %}
+                <li class="list-group-item">
+                    <h5 class="mb-2">
+                        {% if result.__class__.__name__ == 'ParkingLot' %}
+                            Parking Lot: {{ result.prime_location_name }}
+                        {% elif result.__class__.__name__ == 'Reservation' %}
+                            Reservation ID: {{ result.id }}
+                        {% elif result.__class__.__name__ == 'User' %}
+                            Username:: {{ result.username }}
+                        {% else %}
+                            Result: {{ result }}
+                        {% endif %}
+                    </h5>
+
+                    <div class="mb-1">
+                        {% if result.__class__.__name__ == 'ParkingLot' %}
+                            <p><strong>Location:</strong> {{ result.address }}</p>
+                            <p><strong>Pin Code:</strong> {{ result.pin_code }}</p>
+                            <p><strong>Available Spots:</strong> {{ result.total_available() }}</p>
+                            <a href="{{ url_for('admin_bp.view_parking_lot', admin_id=current_user.id, lot_id=result.id) }}" role="button" class="btn btn-primary">View Lot</a>
+
+                        {% elif result.__class__.__name__ == 'Reservation' %}
+                            <p><strong>Reserved By:</strong> {{ result.user.full_name }} ({{ result.user.email }})</p>
+                            <p><strong>Parking Lot:</strong> {{ result.spot.lot.prime_location_name }}</p>
+                            <p><strong>Slot ID:</strong> {{ result.spot_id }}</p>
+                            <p><strong>Date:</strong> {{ result.date }}</p>
+                        
+                        {% elif result.__class__.__name__ == 'User' %}
+                            <p><strong>Full name </strong> {{ result.full_name }}</p>
+                            <p><strong>Email: </strong> {{ result.email }}</p>
+                            <p><strong>Total reservations: </strong> {{ result.reservations | length }}</p>
+                            <p><strong>Status:</strong> {{ result.is_flagged }}</p>
+                            <p><strong>Total Buisness: </strong> {{ result.total_expenses() }}</p>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-warning">No results found for <strong>{{ query }}</strong>.</div>
+    {% endif %}
+</div>
+{% endblock %}

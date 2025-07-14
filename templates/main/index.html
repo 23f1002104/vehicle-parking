@@ -22,13 +22,8 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="{{ url_for('main_bp.services') }}">Services</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" aria-disabled="true">Stats</a>
-                        <!-- <a class="nav-link active" aria-current="page" href="{{ url_for('main_bp.stats') }}">Stats</a> -->
-                    </li>
                 </ul>
                 <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('main_bp.search') }}">
-                    <!-- <label for="field" class="form-label me-2">Filter</label> -->
                         <select id="field" name="field" class="form-select me-2 btn btn-sm" >
                         <option value="parking_lot">Parking Lot</option>
                         <option disabled>Kindly Login for <br>more search options</option>
@@ -36,17 +31,20 @@
                     <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query"/>
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
-                <li class="nav-item">
-                    <a class="btn btn-outline-primary" href="{{ url_for('auth_bp.login') }}">login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="btn btn-outline-secondary" href="{{ url_for('auth_bp.register') }}">Register</a>
-                </li>
+                
+            <div class="d-flex gap-2 ms-2">
+                <a class="btn btn-outline-primary" href="{{ url_for('auth_bp.login') }}">login</a>
+                <a class="btn btn-outline-secondary" href="{{ url_for('auth_bp.register') }}">Register</a>
+            </div>   
             </div>
         </div>
     </nav>
 {% endblock %}
 
 {% block contents %}
-    <p>{{ lipsum(n=10, html=True, min=10, max=20) }}</p>
+<p>Stress-free parking for everyone by reserving a park in advance, people can plan their commute knowing they have a spot in the parking lot.</p>
+
+
+<li>Fair and inclusive access to parking</li>
+<li>Book parking in advance</li>
 {% endblock %}

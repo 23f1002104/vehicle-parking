@@ -3,7 +3,8 @@ from flask import render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
 from sqlalchemy.orm import joinedload  # To eager load from database
-from app import db
+from Forms.misc_forms import ReservationForm
+from app import db, csrf
 from Models.models import User, ParkingLot, ParkingSpot, Reservation
 from . import user_bp
 
@@ -60,9 +61,9 @@ def user_required(f):
 
 ### User functionalities
 
-#? user.py
 @user_bp.route("/<string:user_id>/dashboard")
 @user_required
+@csrf.exempt
 def user_dashboard(user_id):
     user = User.query.filter_by(id=user_id, is_admin=False).first_or_404()
     reservations = Reservation.query.filter_by(user_id=user_id).order_by(
@@ -76,6 +77,7 @@ def user_dashboard(user_id):
 
 @user_bp.route("/<string:user_id>/editprofile", methods=['GET','POST'])
 @user_required
+@csrf.exempt
 def edit_user_profile(user_id):
     if current_user.id == user_id:
         if request.method == "POST":
@@ -130,6 +132,7 @@ def edit_user_profile(user_id):
 #TODO: Add user summary
 @user_bp.route("/<string:user_id>/summary", methods=['GET'])
 @user_required
+@csrf.exempt
 def user_summary(user_id):
     user = User.query.filter_by(id=user_id).first_or_404()
     reservations = Reservation.query.filter_by(user_id=user_id).order_by(
@@ -144,6 +147,7 @@ def user_summary(user_id):
 
 @user_bp.route("/<string:user_id>/search", methods=['GET'])
 @user_required
+@csrf.exempt
 def search(user_id):
     from rapidfuzz import fuzz, utils
     query = request.args.get("query", "").strip()
@@ -198,6 +202,7 @@ def search(user_id):
 
 @user_bp.route("/<string:user_id>/viewlots", methods=['GET'])
 @user_required
+@csrf.exempt
 def view_parking_lots(user_id):
     lots = ParkingLot.query.all()
     return render_template("users/view_parking_lots.html", lots=lots)
@@ -211,13 +216,20 @@ def reserve_spot(user_id,lot_id):
     if current_user.id == user_id:
         lot = ParkingLot.query.filter_by(id=lot_id).first_or_404() # return 404 error if not found
         spot = ParkingSpot.query.filter_by(lot_id=lot_id, status="A").first_or_404() # checks if any spot is available in that lot
-        
-        if request.method == 'POST':
-            res_username = request.form.get("username")
+
+        form = ReservationForm()
+
+        if form.validate_on_submit():
+            res_username = form.username.data
             res_user_id = User.query.filter_by(username=res_username).first().id
-            res_lot_id = request.form.get("lot_id")
+            res_lot_id = form.lot_id.data
             res_spot_id = spot.id
-            res_car_id = request.form.get("car_id").strip()
+            res_car_id = form.car_id.data.strip()
+            _ = form.prime_loc_name.data
+
+            assert res_username == current_user.username
+            assert res_lot_id == lot.id
+
             try:
                 new_reservation = Reservation(
                     lot_id = res_lot_id,
@@ -229,22 +241,50 @@ def reserve_spot(user_id,lot_id):
                 spot.status = "O"
                 db.session.commit()
                 flash("Reservation Successful!", "success")
-                
+                    
             except Exception as e:
                 db.session.rollback()
                 flash(f"Reservation failed!\nError:{e}", "danger")
-            
+                
             finally:
                 return redirect(url_for("user_bp.user_dashboard", user_id=current_user.id))
+
+
             
+            # if request.method == 'POST':
+            #     res_username = request.form.get("username")
+            #     res_user_id = User.query.filter_by(username=res_username).first().id
+            #     res_lot_id = request.form.get("lot_id")
+            #     res_spot_id = spot.id
+            #     res_car_id = request.form.get("car_id").strip()
+            #     try:
+            #         new_reservation = Reservation(
+            #             lot_id = res_lot_id,
+            #             spot_id = res_spot_id,
+            #             user_id = res_user_id,
+            #             car_id = res_car_id
+            #         )
+            #         db.session.add(new_reservation)
+            #         spot.status = "O"
+            #         db.session.commit()
+            #         flash("Reservation Successful!", "success")
+                    
+            #     except Exception as e:
+            #         db.session.rollback()
+            #         flash(f"Reservation failed!\nError:{e}", "danger")
+                
+            #     finally:
+            #         return redirect(url_for("user_bp.user_dashboard", user_id=current_user.id))
+                
         print(lot, spot.status)
-        return render_template('users/reserve_spot.html', lot=lot, spot=spot)
+        return render_template('users/reserve_spot.html', lot=lot, spot=spot, form=form)
     
     else:
         abort(403)
 
 @user_bp.route("/<string:user_id>/<string:lot_id>/clearspot/<string:res_id>", methods=['GET','POST'])
 @user_required
+@csrf.exempt
 def release_spot(user_id, lot_id, res_id):
     reservation = Reservation.query.filter_by(id=res_id, user_id=user_id, lot_id=lot_id).order_by(Reservation.parking_timestamp.desc()).first_or_404()
     if request.method == "POST":
@@ -257,7 +297,8 @@ def release_spot(user_id, lot_id, res_id):
                     total_fare = reservation.reservation_cost()
                     flash(f"Spot released! Fare: {total_fare}", "success")
                     reservation.status = "F"
-                    reservation.spot.status = "A"
+                    spot = ParkingSpot.query.filter_by(id=reservation.spot_id, lot_id=reservation.lot_id).first()
+                    spot.status = "A"
                     db.session.commit()
                 except Exception as e:
                     db.session.rollback()

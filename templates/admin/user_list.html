@@ -16,7 +16,7 @@
                         <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.user_list', admin_id=current_user.id) }}">Users</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link disabled" aria-current="page" href="{{ url_for('admin_bp.admin_summary', admin_id=current_user.id) }}">Summary</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.admin_summary', admin_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
                 <form class="d-flex" role="search">
@@ -37,8 +37,7 @@
                 <th scope="col">Full Name</th>
                 <th scope="col">Username</th>
                 <th scope="col">Email Id</th>
-                <th scope="col">Spots Used</th>
-                <th scope="col">Action</th>
+                <th scope="col">Reservations</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,14 +47,7 @@
                     <td>{{ user.full_name }}</td>
                     <td>{{ user.username }}</td>
                     <td>{{ user.email }}</td>
-                    <td>{{ user.reservations | map(attribute='spot_id') | join(', ') }}</td> <!-- This accesses the list of `Reservation` objects associated with the current user and the `map` filter grabs the `spot_id` from each reservation. -->
-                    <td>
-                        {% if user.is_flagged %}
-                            <a href="{{ url_for('admin_bp.user_list', admin_id=current_user.id) }}" class="btn btn-success">Unflag</a>
-                        {% else %}
-                            <a href="{{ url_for('admin_bp.user_list', admin_id=current_user.id) }}" class="btn btn-danger">Flag</a>
-                        {% endif %}
-                    </td>
+                    <td>{{ user.reservations | map(attribute='id') | join(', ') }}</td> <!-- This accesses the list of `Reservation` objects associated with the current user and the `map` filter grabs the `spot_id` from each reservation. -->
                 </tr>
                 {% endfor %}
             </tbody>

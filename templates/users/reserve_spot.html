@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block contents %}
-    <div class="container mt-5">
+    <!-- <div class="container mt-5">
         <form class="row g-3" method="post" action="{{ url_for('user_bp.reserve_spot', user_id=current_user.id, lot_id=lot.id) }}">
             <br>
             <div class="col-md-6">
@@ -50,5 +50,49 @@
                 <a href="{{ url_for('user_bp.user_dashboard', user_id=current_user.id) }}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
+    </div> -->
+
+    <div class="container mt-5">
+        <form class="row g-3" method="post" action="{{ url_for('user_bp.reserve_spot', user_id=current_user.id, lot_id=lot.id) }}">
+            {{ form.hidden_tag() }}
+
+            
+            <div class="col-md-6">
+                {{ form.lot_id.label(class="form-label fw-bold text-dark") }}
+                {{ form.lot_id(class="form-control", readonly=True, value=lot.id) }}
+            </div>
+
+            
+            <div class="col-md-6">
+                {{ form.prime_loc_name.label(class="form-label fw-bold text-dark") }}
+                {{ form.prime_loc_name(class="form-control", readonly=True, value=lot.prime_location_name) }}
+            </div>
+
+            
+            <div class="col-md-6">
+                {{ form.username.label(class="form-label fw-bold text-dark") }}
+                {{ form.username(class="form-control", readonly=True, value=current_user.username) }}
+            </div>
+
+            
+            <div class="col-md-6">
+                {{ form.spot_id.label(class="form-label fw-bold text-dark") }}
+                {{ form.spot_id(class="form-control", readonly=True, value=spot.id) }}
+            </div>
+
+            <div class="col-md-6">
+                {{ form.car_id.label(class="form-label fw-bold text-dark") }}
+                {{ form.car_id(class="form-control", placeholder="eg.XX-00-XX-0000") }}
+                {% for error in form.car_id.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="col-12">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('user_bp.user_dashboard', user_id=current_user.id) }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+
     </div>
 {% endblock %}

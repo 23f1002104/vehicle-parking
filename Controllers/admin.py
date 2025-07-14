@@ -1,3 +1,4 @@
+from sre_constants import SUCCESS
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from Models.models import User, ParkingLot, ParkingSpot, Reservation
@@ -27,7 +28,7 @@ def admin_required(f):
 
 ### Admin Functionalities
 @admin_bp.route("/<string:admin_id>/dashboard/")
-@admin_required    #** change to `@admin_required`
+@admin_required
 def admin_dashboard(admin_id):
     parking_lots = ParkingLot.query.all()  
     if not current_user.is_admin or current_user.id != admin_id:
@@ -95,93 +96,93 @@ def edit_admin_profile(admin_id):
 @admin_required
 def search(admin_id):
     from rapidfuzz import fuzz, utils
+
     query = request.args.get("query", "").strip()
-    field = request.args.get("field", "").strip() or "prime_location_name"  # Default search field
+    field = request.args.get("field", "").strip() or "prime_location_name"
 
     if not query:
         return render_template("admin/admin_search.html", results=["No query passed"], query=query, field=field, admin_id=admin_id)
 
     processed_query = utils.default_process(query)
-    threshold = 80 # needs to be adjusted for better results
+    print(processed_query)
+    threshold = 90
     results = []
-    
-    
+
     # ParkingLot Search
     if field in ("parking_lot", "prime_location_name"):
         for lot in ParkingLot.query.all():
             for col in lot.__table__.columns:
-                score = fuzz.WRatio(
-                    processed_query, 
-                    str(getattr(lot, col.name)), 
-                    processor=utils.default_process, 
-                    score_cutoff=threshold
+                score = fuzz.token_set_ratio(
+                    processed_query,
+                    str(getattr(lot, col.name)),
+                    processor=utils.default_process
                 )
-                # print(score)
+                print(score, col.name)
                 if score > threshold:
                     results.append(lot)
-                    break # move to next item
-        
+                    break
 
     # User Search
     elif field == "user":
         for user in User.query.filter_by(is_admin=False).all():
             for col in user.__table__.columns:
-                score = fuzz.WRatio(
-                    processed_query, 
-                    str(getattr(user, col.name)), 
-                    processor=utils.default_process, 
-                    score_cutoff=threshold
+                score = fuzz.token_set_ratio(
+                    processed_query,
+                    str(getattr(user, col.name)),
+                    processor=utils.default_process
                 )
-                # print(score)
+                print(score, col.name)
                 if score > threshold:
                     results.append(user)
-                    break # move to next item
+                    break
 
     # Reservation Search
     elif field == "reservations":
-        # use eager load as reservation has foreign keys to user and parking_spot
-        for reservation in Reservation.query.options(joinedload(Reservation.user), joinedload(Reservation.parking_spot)).all():
+        for reservation in Reservation.query.options(
+            joinedload(Reservation.user),
+            joinedload(Reservation.spot)
+        ).all():
             for col in reservation.__table__.columns:
-                score = fuzz.WRatio(
-                    processed_query, 
-                    str(getattr(reservation, col.name)), 
-                    processor=utils.default_process, 
-                    score_cutoff=threshold
+                score = fuzz.token_set_ratio(
+                    processed_query,
+                    str(getattr(reservation, col.name)),
+                    processor=utils.default_process
                 )
-                # print(score)
+                print(score, col.name)
                 if score > threshold:
                     results.append(reservation)
-                    break # move to next item
+                    break
 
-    # Deduplicate by object ID
+    else:
+        flash("Invalid search field", "secondary")
+
+    # Deduplicate by ID
     results_list = list({getattr(obj, 'id'): obj for obj in results}.values())
-    # final result
-    results = results_list if len(results_list) > 0 else ["Try using better query or field. Could not find a match"]
-    print(results, type(query), field) # Debugging
+    results = results_list if results_list else ["Try using better query or field. Could not find a match"]
+
     return render_template("admin/admin_search.html", results=results, query=query, field=field, admin_id=admin_id)
 
 
-#TODO: Create a summary page
+
+#Created a summary page
 @admin_bp.route("/<string:admin_id>/summary", methods=['GET', 'POST'])
 def admin_summary(admin_id):
     admin = User.query.filter_by(id=admin_id, is_admin=True).first_or_404() # Check whether the admin exists
     if current_user.id == admin_id:
         lots_summary = ParkingLot.query.all()
         reservation_summary = Reservation.query.all()
-        # print(reservation_summary)
+        # print(reservation_summary[-1])
         return render_template("admin/admin_summary.html", lots_summary=lots_summary, reservation_summary=reservation_summary)
 
 
 
 
 @admin_bp.route("/<string:admin_id>/users", methods=['GET', 'POST'])
-@admin_required #** change to `@admin_required`
+@admin_required 
 def user_list(admin_id):
     if not current_user.is_admin or current_user.id != admin_id:
         flash("Admin permission required! Access denied.", 'danger')
         return redirect(url_for('auth_bp.login'))
-    
-    #TODO: Implement flagging users
     
     users = User.query.filter_by(is_admin=False).all()  # Fetch all non-admin users
     return render_template("admin/user_list.html", users=users)
@@ -189,7 +190,7 @@ def user_list(admin_id):
 # CRUD functionalities for parking lots
 
 @admin_bp.route("/<string:admin_id>/createLot", methods=['POST'])
-@admin_required #** change to `@admin_required`
+@admin_required 
 def create_parking_lot(admin_id):
     if not current_user.is_admin or current_user.id != admin_id:
         flash("Admin permission required! Access denied.", 'danger')
@@ -237,7 +238,7 @@ def create_parking_lot(admin_id):
 
 
 @admin_bp.route("/<string:admin_id>/viewLot/<string:lot_id>", methods=['GET'])
-@admin_required #** change to `@admin_required`
+@admin_required 
 def view_parking_lot(admin_id, lot_id):
     """lazy loading is more about less memory and more computations at each function call, while eager loading 
     would use more memory and more computations when the class is created and less computations when the function is called"""
@@ -259,7 +260,7 @@ def view_parking_lot(admin_id, lot_id):
 
 
 @admin_bp.route("/<string:admin_id>/editLot/<string:lot_id>", methods=['GET', 'POST'])
-@admin_required #** change to `@admin_required`
+@admin_required 
 def edit_parking_lot(admin_id, lot_id):
     """lazy loading is more about less memory and more computations at each function call, while eager loading 
     would use more memory and more computations when the class is created and less computations when the function is called"""
@@ -283,31 +284,34 @@ def edit_parking_lot(admin_id, lot_id):
         new_prime_location_name = request.form.get("prime_location_name")
         new_address = request.form.get("address")
         new_pin_code = request.form.get("pin_code")
-        #** to update max_spots we require to create or delete some parking spots. Needs additional logic.
-        # new_max_spots = request.form.get("max_spots")
+        new_max_spots = int(request.form.get("new_max_spots"))
 
         # Update the parking lot details
         parking_lot.price_per_hour = new_price
         parking_lot.prime_location_name = new_prime_location_name
         parking_lot.address = new_address
         parking_lot.pin_code = new_pin_code
-        #** Needed proper logic to update max_spots
+        updated = parking_lot.update_max_spots(new_max_spots)
         # parking_lot.max_spots = new_max_spots
 
-        try:
-            db.session.commit()
-            flash("Parking lot details updated successfully!", "success")
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Error updating parking lot details: {str(e)}", "danger")
-        return redirect(url_for('admin_bp.view_parking_lot', admin_id=admin_id, lot_id=lot_id))
+        if updated:
+            try:
+                db.session.commit()
+                flash("Parking lot details updated successfully!", "success")
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Error updating parking lot details: {str(e)}", "danger")
+            return redirect(url_for('admin_bp.view_parking_lot', admin_id=admin_id, lot_id=lot_id))
+
+        else:
+            flash("Error updating parking lot details: Cannot update max_spots", "danger")
     
     return render_template("admin/edit_parking_lot.html", parking_lot=parking_lot)
 
 
 
 @admin_bp.route("/<string:admin_id>/deleteLot/<string:lot_id>", methods=['POST'])
-@admin_required #** change to `@admin_required`
+@admin_required 
 def delete_parking_lot(admin_id, lot_id):
     """Delete functionality for parking lots. Possible only when all parking spots are empty."""
     if not current_user.is_admin or current_user.id != admin_id:
@@ -341,7 +345,7 @@ def delete_parking_lot(admin_id, lot_id):
 
 # On parking spots no create and update is allowed, so only read and delete.
 @admin_bp.route("/<string:admin_id>/viewLot/<string:lot_id>/viewSpot/<string:spot_id>", methods=['GET'])
-@admin_required #** change to `@admin_required`
+@admin_required 
 def view_parking_spot(admin_id, lot_id, spot_id):
     if not current_user.is_admin or current_user.id != admin_id:
         flash("Admin permission required! Access denied.", 'danger')
@@ -361,7 +365,7 @@ def view_parking_spot(admin_id, lot_id, spot_id):
 
 
 @admin_bp.route("/<string:admin_id>/viewLot/<string:lot_id>/deleteSpot/<string:spot_id>", methods=['POST'])
-@admin_required #** change to `@admin_required`
+@admin_required 
 def delete_parking_spot(admin_id, spot_id, lot_id):
     if not current_user.is_admin or current_user.id != admin_id:
         flash("Admin permission required! Access denied.", 'danger')

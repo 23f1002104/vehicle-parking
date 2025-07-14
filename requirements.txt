@@ -2,6 +2,7 @@ requests
 flask
 flask-login
 flask-sqlalchemy
-flask-migrate
+flask-wtf
+email-validator # is not installed automatically with wtforms
 python-dotenv
 rapidfuzz # for search functionality

@@ -21,8 +21,14 @@
                         <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.admin_summary', admin_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+                <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('admin_bp.search', admin_id=current_user.id) }}">
+                    <label for="field" class="form-label me-2">Filter</label>
+                        <select id="field" name="field" class="form-select me-2">
+                        <option value="parking_lot">Parking Lot</option>
+                        <option value="reservation">Reservation</option>
+                        <option value="user">User</option>
+                        </select>
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query"/>
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
             </div>
@@ -50,9 +56,16 @@
             </div>
             <div class="mb-3">
                 <label for="pin_code" class="form-label">Pin Code</label>
-                <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{ parking_lot.pin_code }}" required>
+                <input type="number" class="form-control" id="pin_code" name="pin_code" value="{{ parking_lot.pin_code }}" required>
             </div>
-            <button type="submit" class="btn btn-success">Update Parking Lot</button>
+            <div class="mb-3">
+                <label for="max_spots" class="form-label">Maximum Spots</label>
+                <input type="number" min="1" class="form-control" id="max_spots" name="new_max_spots" value="{{ parking_lot.max_spots }}" required>
+            </div>
+            <div class="mt-3 d-flex justify-content-center gap-2">
+                <button type="submit" class="btn btn-success">Update</button>
+                <a href="{{ url_for('admin_bp.view_parking_lot', admin_id=current_user.id, lot_id=parking_lot.id) }}" class="btn btn-secondary">Cancel</a>
+            </div>
         </form>
     </div>
 {% endblock %}

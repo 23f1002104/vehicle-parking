@@ -23,7 +23,6 @@
                 <form class="d-flex align-items-center" role="search" method="GET" action="{{ url_for('admin_bp.search', admin_id=current_user.id) }}">
                     <label for="field" class="form-label me-2">Filter</label>
                         <select id="field" name="field" class="form-select me-2">
-                        <option value="">Search by:</option>
                         <option value="parking_lot">Parking Lot</option>
                         <option value="reservation">Reservation</option>
                         <option value="user">User</option>
@@ -105,7 +104,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="pincode" class="col-form-label">Pin Code</label>
-                        <input type="text" class="form-control" id="pincode" name="pin_code" required>
+                        <input type="number" class="form-control" id="pincode" name="pin_code" min= "100000" max="999999" required>
                     </div>
                     <div class="mb-3">
                         <label for="max_spots" class="col-form-label">Maximum Available Spots</label>

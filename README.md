@@ -17,9 +17,10 @@ All the app routes are added here,`./Controllers/routes.py` including authentica
 ```bash
 gh repo clone AbhrojyotiGhosh/vehicle-parking
 ```
-2. Create a virtual environment
+2. Create a virtual environment and activate
 ```bash
 python3 -m venv .venv
+cd .venv/bin/activte
 ```
 3. Install `requirements.txt` by
 ```bash
@@ -78,10 +79,10 @@ flask run
     - [x] Create a field in the admin dashboard to search for a user, parking lot or reservation
 - [x] User dashboard (Partially created)
 - [x] `@user_requied` decorator to check if user is logged in and is not an admin
-- [ ] User functionalities
-    - [ ] operation on parking spots
-    - [ ] CRUD on `Reservation` 
-    - [ ] Track timestamps for reservation and View parking history
+- [x] User functionalities
+    - [x] operation on parking spots
+    - [x] CRUD on `Reservation` 
+    - [x] Track timestamps for reservation and View parking history
 
 ---
 

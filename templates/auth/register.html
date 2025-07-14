@@ -1,5 +1,10 @@
 {% extends 'base.html' %}
 
+
+{% block title %}
+    Register
+{% endblock %}
+
 {% block navbar %}
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
@@ -31,8 +36,57 @@
 {% block contents %}
     <div class="container mt-5">
         <form class="row g-3" method="post" action="{{ url_for('auth_bp.register') }}">
+            {{ form.hidden_tag() }}
             <br>
             <div class="col-md-6">
+                {{  form.username.label(class_="form-label fw-bold text-dark") }}
+                {{ form.username(class_="form-control") }}
+                <!-- error after validation check -->
+                {% for error in form.username.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <br>
+            <div class="col-md-6">
+                {{  form.email.label(class_="form-label fw-bold text-dark") }}
+                {{ form.email(class_="form-control") }}
+                <!-- error after validation check -->
+                {% for error in form.email.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <br>
+            <div class="col-md-6">
+                {{  form.full_name.label(class_="form-label fw-bold text-dark") }}
+                {{ form.full_name(class_="form-control") }}
+                <!-- error after validation check -->
+                {% for error in form.full_name.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <br>
+            <div class="col-md-6">
+                {{  form.password.label(class_="form-label fw-bold text-dark") }}
+                {{ form.password(class_="form-control") }}
+                <!-- error after validation check -->
+                {% for error in form.password.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <br>
+            <div class="col-md-6">
+                {{  form.confirm_password.label(class_="form-label fw-bold text-dark") }}
+                {{ form.confirm_password(class_="form-control") }}
+                <!-- error after validation check -->
+                {% for error in form.confirm_password.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <br>
+            <div class="col-12">
+                {{ form.submit(class_="btn btn-primary") }}
+            </div>
+            <!-- <div class="col-md-6">
                 <label for="inputfullname" class="form-label fw-bold text-dark">Full Name</label>
                 <input type="text" class="form-control" id="inputfullname" name="full_name">
             </div>
@@ -52,14 +106,14 @@
                 <input type="password" class="form-control" id="inputPassword" name="password">
             </div>
             <br>
-            <!-- <div class="col-md-6">
+            <div class="col-md-6">
                 <label for="inputConfPassword" class="form-label fw-bold text-dark">Confirm Password</label>
                 <input type="password" class="form-control" id="inputConfPassword" name="confpassword">
             </div>
-            <br> -->
+            <br>
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">Register</button>
-            </div>
+            </div> -->
         </form>
         <br>
         <div class="login-link text-center">

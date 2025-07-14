@@ -16,12 +16,14 @@
                         <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.edit_user_profile', user_id=current_user.id) }}">Edit Profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link disabled" aria-current="page" href="">Summary</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('user_bp.user_summary', user_id=current_user.id) }}">Summary</a>
                     </li>
                 </ul>
-                <li class="nav-item">
-                    <a class="btn btn-outline-danger" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
-                </li>
+                <div>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-danger" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
+                    </li>
+                </div>
             </div>
         </div>
     </nav> 

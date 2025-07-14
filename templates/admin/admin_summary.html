@@ -39,7 +39,7 @@
     <div class="container">
         <div class="contents" id="reservation-summary">
             <h1>Reservations Summary</h1>
-            <div class="table-responsive scrollabel-table">
+            <div class="table-responsive">
                 <table class="table table-striped align-middle table-bordered">
                     <thead>
                         <tr>
@@ -59,7 +59,7 @@
                         <tr>
                             <td>{{ res.id }}</td>
                             <td>{{ res.user.username }}</td>
-                            <td>{{ res.spot_id }}</td>
+                            <td>{{ res.spot.id }}</td>
                             <td>{{ res.lot.id }}</td>
                             <td>{{ res.lot.address }} <br> {{ res.lot.prime_location_name }} <br> {{ res.lot.pin_code }}</td>
                             <td>{{ res.parking_timestamp.strftime('%d-%m-%Y') }} <br> {{ res.parking_timestamp.strftime('%H:%M') }} </td>
@@ -84,14 +84,14 @@
     <div class="container">
         <div class="contents" id="parking-lots-summary">
             <h1>Parking Lot Summary</h1>
-            <div class="table-responsive scrollable-table">
+            <div class="table-responsive">
                 <table class="table table-bordered align-middle">
                 <thead>
                     <tr>
                         <th>Lot Location</th>
                         <th>Lot ID</th>
                         <th>Total Reservations</th>
-                        <th>Total Cost</th>
+                        <th>Total Revenue</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -99,7 +99,7 @@
                     <tr>
                         <td>{{ lot.prime_location_name }}</td>
                         <td>{{ lot.id }}</td>
-                        <td>{{ lot.uses | length }}</td>
+                        <td>{{ lot.reservations | length }}</td>
                         <td>{{ lot.total_revenue() }}</td>
                     </tr>
                     {% endfor %}
@@ -110,10 +110,5 @@
     </div>
 {% endblock %}
 
-<style>
-    .scrollable-table {
-        max-height: 600px;
-        overflow-y: auto;
-    }
-</style>
+
 
