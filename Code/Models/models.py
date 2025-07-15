@@ -6,7 +6,6 @@ from shortuuid import uuid  # shotuuids are more human readable
 from . import db
 
 # User model
-
 class User(db.Model, UserMixin):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid4()))
     username = db.Column(db.String(36), unique=True, nullable=False)
@@ -14,7 +13,6 @@ class User(db.Model, UserMixin):
     full_name = db.Column(db.String(80))
     password = db.Column(db.String(256), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    is_flagged = db.Column(db.Boolean, default=False)
 
     reservations = db.relationship(
         'Reservation',
